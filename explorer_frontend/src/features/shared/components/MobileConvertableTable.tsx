@@ -8,6 +8,7 @@ import {
 import { useStyletron } from "baseui";
 import type { ReactNode } from "react";
 import { StyledList } from "..";
+import { getTableContainerStyles } from "../../../styleHelpers";
 
 export type MobileConvertableTable = {
   columns: ReactNode[];
@@ -62,9 +63,8 @@ export const MobileConvertableTable = ({ columns, data, isMobile }: MobileConver
   return (
     <div
       className={css({
-        width: "100%",
+        ...getTableContainerStyles(),
         flexGrow: 1,
-        overflow: "hidden",
       })}
     >
       <TableSemantic
