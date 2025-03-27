@@ -7,6 +7,7 @@ import (
 
 	"github.com/NilFoundation/nil/nil/cmd/nild/nildconfig"
 	"github.com/NilFoundation/nil/nil/common/check"
+	"github.com/NilFoundation/nil/nil/common/concurrent"
 	"github.com/NilFoundation/nil/nil/common/logging"
 	"github.com/NilFoundation/nil/nil/internal/cobrax"
 	"github.com/NilFoundation/nil/nil/internal/cobrax/cmdflags"
@@ -48,10 +49,14 @@ func main() {
 		check.PanicIfErr(err)
 	}
 
-	exitCode := nilservice.Run(context.Background(), cfg.Config, database, nil,
-		func(ctx context.Context) error {
+	exitCode := nilservice.Run(
+		context.Background(),
+		cfg.Config,
+		database,
+		nil,
+		concurrent.WithSource(func(ctx context.Context) error {
 			return database.LogGC(ctx, cfg.DB.DiscardRatio, cfg.DB.GcFrequency)
-		})
+		}))
 
 	database.Close()
 	os.Exit(exitCode)

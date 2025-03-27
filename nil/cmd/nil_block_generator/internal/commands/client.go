@@ -11,6 +11,7 @@ import (
 	cliservice_common "github.com/NilFoundation/nil/nil/cmd/nil/common"
 	"github.com/NilFoundation/nil/nil/cmd/nild/nildconfig"
 	"github.com/NilFoundation/nil/nil/common"
+	"github.com/NilFoundation/nil/nil/common/concurrent"
 	"github.com/NilFoundation/nil/nil/common/logging"
 	"github.com/NilFoundation/nil/nil/common/version"
 	"github.com/NilFoundation/nil/nil/internal/db"
@@ -33,10 +34,14 @@ func backgroundNilNode(cfg *nildconfig.Config) {
 		database.Close()
 		stop()
 	}()
-	exitCode := nilservice.Run(ctx, cfg.Config, database, nil,
-		func(ctx context.Context) error {
+	exitCode := nilservice.Run(
+		ctx,
+		cfg.Config,
+		database,
+		nil,
+		concurrent.WithSource(func(ctx context.Context) error {
 			return database.LogGC(ctx, cfg.DB.DiscardRatio, cfg.DB.GcFrequency)
-		})
+		}))
 	if exitCode != 0 {
 		fmt.Printf("nilservice failed with code %d\n", exitCode)
 	}

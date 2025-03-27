@@ -113,3 +113,4 @@ issues:
 run:
   build-tags:
     - test
+    - goexperiment.synctest

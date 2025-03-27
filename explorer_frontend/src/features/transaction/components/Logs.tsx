@@ -7,6 +7,7 @@ import { addressRoute } from "../../routing";
 import { Card, Link, addHexPrefix } from "../../shared";
 import type { TransactionLog } from "../types/TransactionLog";
 import { getTableContainerStyles } from "../../../styleHelpers";
+import noLog from "./assets/no-log.svg";
 
 type LogsProps = {
   logs: TransactionLog[];
@@ -17,6 +18,15 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: "16px",
+  },
+  noLogsContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "16px",
+    height: "100%",
+    width: "100%",
   },
   contaier: {
     display: "grid",
@@ -57,7 +67,13 @@ export const Logs: FC<LogsProps> = ({ logs }) => {
   return (
     <>
       {logs.length === 0 ? (
-        <ParagraphLarge>No logs</ParagraphLarge>
+        <div className={css(styles.noLogsContainer)}>
+          <img src={noLog} alt="no-log" width={88} height={88} />
+          <ParagraphLarge color={COLORS.gray50}>No logs found for this transaction</ParagraphLarge>
+          <ParagraphSmall color={COLORS.gray300}>
+            It looks like this transaction didn’t generate any events or interactions
+          </ParagraphSmall>
+        </div>
       ) : (
         <div className={css(styles.logsContainer)}>
           {logs.map((log) => (
@@ -68,7 +84,9 @@ export const Logs: FC<LogsProps> = ({ logs }) => {
                   <ParagraphSmall>
                     <Link
                       to={addressRoute}
-                      params={{ address: addHexPrefix(log.address.toLowerCase()) }}
+                      params={{
+                        address: addHexPrefix(log.address.toLowerCase()),
+                      }}
                     >
                       {addHexPrefix(log.address.toLowerCase())}
                     </Link>
