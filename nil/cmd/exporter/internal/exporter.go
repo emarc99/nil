@@ -51,15 +51,15 @@ func StartExporter(ctx context.Context, cfg *Cfg) error {
 		return fmt.Errorf("failed to setup exporter: %w", err)
 	}
 
-	workers := make([]concurrent.Func, 0, len(shards)+1)
+	workers := make([]concurrent.FuncWithSource, 0, len(shards)+1)
 	for _, shard := range shards {
-		workers = append(workers, func(ctx context.Context) error {
+		workers = append(workers, concurrent.WithSource(func(ctx context.Context) error {
 			return e.startFetchers(ctx, shard)
-		})
+		}))
 	}
-	workers = append(workers, func(ctx context.Context) error {
+	workers = append(workers, concurrent.WithSource(func(ctx context.Context) error {
 		return e.startDriverExport(ctx)
-	})
+	}))
 
 	return concurrent.Run(ctx, workers...)
 }
@@ -122,12 +122,12 @@ func (e *exporter) startFetchers(ctx context.Context, shardId types.ShardId) err
 	}
 
 	return concurrent.Run(ctx,
-		func(ctx context.Context) error {
+		concurrent.WithSource(func(ctx context.Context) error {
 			return e.runTopFetcher(ctx, shardId, lastProcessedBlock+1)
-		},
-		func(ctx context.Context) error {
+		}),
+		concurrent.WithSource(func(ctx context.Context) error {
 			return e.runBottomFetcher(ctx, shardId, lastProcessedBlock)
-		},
+		}),
 	)
 }
 

@@ -82,7 +82,7 @@ buildGo124Module rec {
   packageName = "github.com/NilFoundation/nil";
 
   doCheck = enableTesting;
-  checkFlags = [ "-tags assert,test" "-timeout 15m" ]
+  checkFlags = [ "-tags assert,test,goexperiment.synctest" "-timeout 15m" ]
     ++ (if enableRaceDetector then [ "-race" ] else [ ]);
 
   preCheck = ''

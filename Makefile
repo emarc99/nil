@@ -6,7 +6,7 @@ PACKAGE = github.com/NilFoundation/nil
 GO_FLAGS =
 GOBUILD = GOPRIVATE="$(GOPRIVATE)" $(GO) build $(GO_FLAGS)
 GO_DBG_BUILD = GOPRIVATE="$(GOPRIVATE)" $(GO) build -tags $(BUILD_TAGS),debug,assert -gcflags=all="-N -l"  # see delve docs
-GOTEST = GOPRIVATE="$(GOPRIVATE)" GODEBUG=cgocheck=0 $(GO) test -tags $(BUILD_TAGS),debug,assert,test $(GO_FLAGS) ./... -p 2
+GOTEST = GOPRIVATE="$(GOPRIVATE)" GODEBUG=cgocheck=0 $(GO) test -tags $(BUILD_TAGS),debug,assert,test,goexperiment.synctest $(GO_FLAGS) ./... -p 2
 
 SC_COMMANDS = sync_committee sync_committee_cli proof_provider prover nil_block_generator relayer
 COMMANDS += nild nil nil_load_generator exporter cometa faucet journald_forwarder relay stresser $(SC_COMMANDS)
@@ -63,15 +63,19 @@ $(BIN_FILES): | compile-bins
 
 compile-contracts: $(BIN_FILES)
 
-lint: generated
+golangci-lint:
+	golangci-lint run
+
+format: generated
 	GOPROXY= go mod tidy
 	GOPROXY= go mod vendor
 	gofumpt -l -w .
 	gci write . --skip-generated --skip-vendor
-	golangci-lint run
+
+lint: format golangci-lint
 
 checklocks: generated
-	@export GOFLAGS="$$GOFLAGS -tags=test"; \
+	@export GOFLAGS="$$GOFLAGS -tags=test,goexperiment.synctest"; \
 	for dir in $(CHECK_LOCKS_DIRECTORIES); do \
 		echo ">> Checking locks correctness in $$dir"; \
 		go run gvisor.dev/gvisor/tools/checklocks/cmd/checklocks "$$dir" || exit 1; \
