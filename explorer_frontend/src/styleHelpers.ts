@@ -36,7 +36,7 @@ export const getLargeScreenStyles = (styles: StyleObject) => ({
   },
 });
 
-export const getTableContainerStyles = (): StyleObject => ({
+export const tableContainerStyles: StyleObject = {
   overflowX: "auto" as const,
   width: "100%",
   [`@media screen and (min-width: ${mobileMaxScreenSize + 1}px)`]: {
@@ -45,4 +45,4 @@ export const getTableContainerStyles = (): StyleObject => ({
   [`@media screen and (min-width: ${tabletMaxScreenSize + 1}px)`]: {
     overflowX: "auto" as const,
   },
-});
+};

@@ -6,7 +6,7 @@ import { type StyleObject, useStyletron } from "styletron-react";
 import { addressRoute } from "../../routing";
 import { Card, Link, addHexPrefix } from "../../shared";
 import type { TransactionLog } from "../types/TransactionLog";
-import { getTableContainerStyles } from "../../../styleHelpers";
+import { tableContainerStyles } from "../../../styleHelpers";
 import noLog from "./assets/no-log.svg";
 
 type LogsProps = {
@@ -35,7 +35,7 @@ const styles = {
     height: "100%",
     width: "100%",
     flexGrow: 1,
-    ...getTableContainerStyles(),
+    ...tableContainerStyles,
   },
   infoContainer: {
     display: "flex",
