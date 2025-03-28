@@ -327,3 +327,12 @@ func (api *NodeApiOverShardApis) ClientVersion(ctx context.Context) (string, err
 	}
 	return result, nil
 }
+
+func (api *NodeApiOverShardApis) DoPanicOnShard(ctx context.Context, shardId types.ShardId) (uint64, error) {
+	methodName := methodNameChecked("DoPanicOnShard")
+	shardApi, ok := api.Apis[shardId]
+	if !ok {
+		return 0, makeShardNotFoundError(methodName, shardId)
+	}
+	return shardApi.DoPanicOnShard(ctx)
+}

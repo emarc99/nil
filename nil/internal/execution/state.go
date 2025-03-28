@@ -1067,7 +1067,7 @@ func (es *ExecutionState) HandleTransaction(
 			}
 			ev = es.logger.Debug()
 		}
-
+		ev.Stringer(logging.FieldTransactionHash, es.InTransactionHash)
 		ev.Stringer("result", retError).Int(logging.FieldTransactionSeqno, int(txn.Seqno))
 		if !txn.IsRefund() && !txn.IsBounce() {
 			ev.Stringer("gasUsed", retError.GasUsed).
@@ -1100,6 +1100,17 @@ func (es *ExecutionState) HandleTransaction(
 			}
 		}
 	}()
+
+	if txn.IsExternal() {
+		addr := txn.To
+		seqno, err := es.GetExtSeqno(addr)
+		if err != nil {
+			return NewExecutionResult().SetFatal(err)
+		}
+		if err := es.SetExtSeqno(addr, seqno+1); err != nil {
+			return NewExecutionResult().SetFatal(err)
+		}
+	}
 
 	es.txnFeeCredit = txn.FeeCredit
 
@@ -1323,16 +1334,6 @@ func (es *ExecutionState) handleExecutionTransaction(
 
 	es.preTxHookCall(transaction)
 	defer func() { es.postTxHookCall(transaction, res) }()
-
-	if transaction.IsExternal() {
-		seqno, err := es.GetExtSeqno(addr)
-		if err != nil {
-			return NewExecutionResult().SetFatal(err)
-		}
-		if err := es.SetExtSeqno(addr, seqno+1); err != nil {
-			return NewExecutionResult().SetFatal(err)
-		}
-	}
 
 	es.revertId = es.Snapshot()
 

@@ -102,6 +102,16 @@ func startRpcServer(
 		},
 	}
 
+	if cfg.EnableDevApi {
+		devImpl := jsonrpc.NewDevAPI(rawApi)
+		apiList = append(apiList, transport.API{
+			Namespace: "dev",
+			Public:    true,
+			Service:   devImpl,
+			Version:   "1.0",
+		})
+	}
+
 	if cfg.Cometa != nil {
 		cmt, err := cometa.NewService(ctx, cfg.Cometa, client)
 		if err != nil {
@@ -172,7 +182,7 @@ func getRawApi(
 	for shardId := range types.ShardId(cfg.NShards) {
 		var err error
 		if slices.Contains(myShards, uint(shardId)) {
-			shardApis[shardId] = rawapi.NewLocalShardApi(shardId, database, txnPools[shardId])
+			shardApis[shardId] = rawapi.NewLocalShardApi(shardId, database, txnPools[shardId], cfg.EnableDevApi)
 			if assert.Enable {
 				api, ok := shardApis[shardId].(*rawapi.LocalShardApi)
 				check.PanicIfNot(ok)

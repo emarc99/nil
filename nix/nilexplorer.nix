@@ -28,17 +28,8 @@ stdenv.mkDerivation rec {
 
   pnpmDeps = (callPackage ./npmdeps.nix { });
 
-
-  nativeBuildInputs = [
-    nodejs
-    pnpm_10.configHook
-    pnpm_10
-    biome
-    python3
-    nil
-    jq
-  ] ++ (if enableTesting then [ nil ] else [ ]);
-
+  nativeBuildInputs = [ nodejs pnpm_10.configHook pnpm_10 biome python3 jq ]
+    ++ (if enableTesting then [ nil ] else [ ]);
 
   preUnpack = ''
     echo "Setting UV_USE_IO_URING=0 to work around the io_uring kernel bug"
@@ -49,18 +40,18 @@ stdenv.mkDerivation rec {
   '';
 
   buildPhase = ''
-    export NIL=${nil}
-
     (cd smart-contracts; pnpm run build)
     (cd niljs; pnpm run build)
 
     (cd explorer_frontend; pnpm run build)
+
     (cd explorer_backend; pnpm run build)
   '';
 
   doCheck = enableTesting;
 
   checkPhase = ''
+    export NIL=${nil}
     export BIOME_BINARY=${biome}/bin/biome
 
     echo "Checking explorer frontend"
@@ -91,10 +82,7 @@ stdenv.mkDerivation rec {
 
   installPhase = ''
     mkdir -p $out
-    mv explorer_frontend/ $out/explorer_frontend
-    mv explorer_backend/ $out/explorer_backend
-    mv niljs $out/niljs
-    mv node_modules $out/node_modules
-    mv smart-contracts $out/smart-contracts
+    mv explorer_frontend/dist $out/frontend
+    mv explorer_backend/dist $out/backend
   '';
 }

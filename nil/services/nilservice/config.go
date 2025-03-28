@@ -41,6 +41,7 @@ type Config struct {
 	// RPC
 	RPCPort        int                   `yaml:"rpcPort,omitempty"`
 	BootstrapPeers network.AddrInfoSlice `yaml:"bootstrapPeers,omitempty"`
+	EnableDevApi   bool                  `yaml:"enableDevApi,omitempty"`
 
 	// Profiling
 	PprofPort int `yaml:"pprofPort,omitempty"`

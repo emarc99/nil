@@ -42,7 +42,7 @@ func (s *SuiteRegression) SetupSuite() {
 				Name:     "Test",
 				Contract: "tests/Test",
 				Address:  s.testAddress,
-				Value:    types.NewValueFromUint64(100000000000000),
+				Value:    types.NewValueFromUint64(100_000_000_000_000),
 			},
 		},
 	}
@@ -143,6 +143,51 @@ func (s *SuiteRegression) TestProposerOutOfGas() {
 	s.Require().Equal("Success", receipt.Status)
 	s.Require().Len(receipt.OutReceipts, 1)
 	s.Require().Equal("OutOfGasDynamic", receipt.OutReceipts[0].Status)
+}
+
+func (s *SuiteRegression) TestInsufficientFundsIncExtSeqno() {
+	abi, err := contracts.GetAbi(contracts.NameTest)
+	s.Require().NoError(err)
+
+	calldata, err := abi.Pack("burnGas")
+	s.Require().NoError(err)
+
+	seqno, err := s.Client.GetTransactionCount(s.T().Context(), s.testAddress, "pending")
+	s.Require().NoError(err)
+
+	fee := types.NewFeePackFromGas(100_000_000_000_000_000)
+
+	txn := &types.ExternalTransaction{
+		Kind:                 types.ExecutionTransactionKind,
+		To:                   s.testAddress,
+		Data:                 calldata,
+		Seqno:                seqno,
+		FeeCredit:            fee.FeeCredit,
+		MaxFeePerGas:         fee.MaxFeePerGas,
+		MaxPriorityFeePerGas: fee.MaxPriorityFeePerGas,
+	}
+
+	txHash, err := s.Client.SendTransaction(s.T().Context(), txn)
+	s.Require().NoError(err)
+	receipt := s.WaitIncludedInMain(txHash)
+	s.Require().False(receipt.Success)
+	s.Require().Equal("InsufficientFunds", receipt.Status)
+
+	txn.Seqno++
+	txHash, err = s.Client.SendTransaction(s.T().Context(), txn)
+	s.Require().NoError(err)
+	receipt = s.WaitIncludedInMain(txHash)
+	s.Require().False(receipt.Success)
+	s.Require().Equal("InsufficientFunds", receipt.Status)
+
+	tests.WaitShardTick(s.T(), s.Context, s.Client, types.BaseShardId)
+
+	txn.Seqno++
+	txHash, err = s.Client.SendTransaction(s.T().Context(), txn)
+	s.Require().NoError(err)
+	receipt = s.WaitIncludedInMain(txHash)
+	s.Require().False(receipt.Success)
+	s.Require().Equal("InsufficientFunds", receipt.Status)
 }
 
 func (s *SuiteRegression) TestNonStringError() {

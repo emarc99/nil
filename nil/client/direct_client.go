@@ -23,6 +23,7 @@ type DirectClient struct {
 	debugApi jsonrpc.DebugAPI
 	dbApi    jsonrpc.DbAPI
 	web3Api  jsonrpc.Web3API
+	devApi   jsonrpc.DevAPI
 }
 
 var _ Client = (*DirectClient)(nil)
@@ -37,12 +38,14 @@ func NewEthClient(
 	debugApi := jsonrpc.NewDebugAPI(localApi, logger)
 	dbApi := jsonrpc.NewDbAPI(db, logger)
 	web3Api := jsonrpc.NewWeb3API(localApi)
+	devApi := jsonrpc.NewDevAPI(localApi)
 
 	return &DirectClient{
 		ethApi:   ethApi,
 		debugApi: debugApi,
 		dbApi:    dbApi,
 		web3Api:  web3Api,
+		devApi:   devApi,
 	}, nil
 }
 
@@ -387,4 +390,8 @@ func (c *DirectClient) GetDebugContract(
 
 func (c *DirectClient) ClientVersion(ctx context.Context) (string, error) {
 	return c.web3Api.ClientVersion(ctx)
+}
+
+func (c *DirectClient) DoPanicOnShard(ctx context.Context, shardId types.ShardId) (uint64, error) {
+	return c.devApi.DoPanicOnShard(ctx, shardId)
 }

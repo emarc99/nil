@@ -35,7 +35,7 @@ func (n *NildInstance) Init(nildPath string, workingDir string) error {
 	if n.IsRpc {
 		cmd = "rpc"
 	}
-	n.cmd = exec.Command(nildPath, cmd, "--config", cfgFile, "-l", "debug", "--log-filter", "-consensus")
+	n.cmd = exec.Command(nildPath, cmd, "--config", cfgFile, "-l", "debug", "--log-filter", "-consensus", "--dev-api")
 	n.cmd.Dir = n.workingDir
 
 	return nil
@@ -58,7 +58,7 @@ func (n *NildInstance) InitSingle(nildPath string, rootDir string, rpcPort int, 
 	}
 
 	n.cmd = exec.Command(nildPath, "run", "--nshards", strconv.Itoa(numShards), "--http-port", //nolint:gosec
-		strconv.Itoa(rpcPort), "-l", "debug", "--log-filter", "-consensus")
+		strconv.Itoa(rpcPort), "-l", "debug", "--log-filter", "-consensus", "--dev-api")
 	n.cmd.Dir = n.workingDir
 
 	return nil

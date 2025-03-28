@@ -47,6 +47,11 @@ func runCommand(cmd *cobra.Command, args []string) error {
 		logger.Error().Err(err).Msg("Failed to fetch the block by number")
 		return err
 	}
-	fmt.Println(string(blockData))
+	if blockData != nil {
+		fmt.Println(string(blockData))
+	} else {
+		fmt.Println("null")
+	}
+
 	return nil
 }

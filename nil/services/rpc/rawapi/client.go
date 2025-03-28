@@ -237,6 +237,10 @@ func (api *ShardApiAccessor) ClientVersion(ctx context.Context) (string, error) 
 	return sendRequestAndGetResponseWithCallerMethodName[string](ctx, api, "ClientVersion")
 }
 
+func (api *ShardApiAccessor) DoPanicOnShard(ctx context.Context) (uint64, error) {
+	return sendRequestAndGetResponseWithCallerMethodName[uint64](ctx, api, "DoPanicOnShard")
+}
+
 func (api *ShardApiAccessor) setNodeApi(nodeApi NodeApi) {
 	api.onSetNodeApi(nodeApi)
 }

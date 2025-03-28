@@ -46,9 +46,7 @@ func (r *Runner) MainLoop(ctx context.Context) {
 			txs, err := r.Workload.Run(ctx, &p)
 			if err != nil {
 				r.logger.Error().Err(err).Msg("Error running workload")
-				return
-			}
-			if len(txs) > 0 {
+			} else if len(txs) > 0 {
 				r.newTxs <- txs
 			}
 		}
