@@ -175,7 +175,7 @@ const config = {
               },
               {
                 label: "=nil; CLI",
-                href: "https://github.com/NilFoundation/nil_cli/tree/master",
+                href: "https://github.com/NilFoundation/nil/tree/main/nil/cmd/nil",
               },
               {
                 label: "Client library",

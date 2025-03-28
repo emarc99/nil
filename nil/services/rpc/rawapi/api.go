@@ -68,6 +68,7 @@ type NodeApiRo interface {
 type NodeApi interface {
 	NodeApiRo
 	SendTransaction(ctx context.Context, shardId types.ShardId, transaction []byte) (txnpool.DiscardReason, error)
+	DoPanicOnShard(ctx context.Context, shardId types.ShardId) (uint64, error)
 }
 
 type ShardApiRo interface {
@@ -117,6 +118,7 @@ type ShardApiRo interface {
 type ShardApi interface {
 	ShardApiRo
 	SendTransaction(ctx context.Context, transaction []byte) (txnpool.DiscardReason, error)
+	DoPanicOnShard(ctx context.Context) (uint64, error)
 }
 
 func SetShardApiAsP2pRequestHandlersIfAllowed(

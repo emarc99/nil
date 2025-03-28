@@ -158,6 +158,7 @@ func parseArgs() *nildconfig.Config {
 	runCmd.Flags().StringVar(&cfg.CometaConfig, "cometa-config", "", "path to Cometa config")
 	runCmd.Flags().StringVar(
 		&cfg.ValidatorKeysPath, "validator-keys-path", cfg.ValidatorKeysPath, "path to write validator keys")
+	runCmd.Flags().BoolVar(&cfg.EnableDevApi, "dev-api", cfg.EnableDevApi, "enable development API")
 
 	addBasicFlags(runCmd.Flags(), cfg)
 	cmdflags.AddNetwork(runCmd.Flags(), cfg.Config.Network)
@@ -193,6 +194,7 @@ func parseArgs() *nildconfig.Config {
 			cfg.RunMode = nilservice.RpcRunMode
 		},
 	}
+	rpcCmd.Flags().BoolVar(&cfg.EnableDevApi, "dev-api", cfg.EnableDevApi, "enable development API")
 
 	addRpcNodeFlags(rpcCmd.Flags(), cfg)
 	addAllowDbClearFlag(rpcCmd.Flags(), cfg)

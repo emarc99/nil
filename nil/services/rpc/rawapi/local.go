@@ -12,10 +12,11 @@ import (
 )
 
 type LocalShardApi struct {
-	db       db.ReadOnlyDB
-	accessor *execution.StateAccessor
-	ShardId  types.ShardId
-	txnpool  txnpool.Pool
+	db           db.ReadOnlyDB
+	accessor     *execution.StateAccessor
+	ShardId      types.ShardId
+	txnpool      txnpool.Pool
+	enableDevApi bool
 
 	nodeApi NodeApi
 }
@@ -25,13 +26,14 @@ var (
 	_ ShardApi   = (*LocalShardApi)(nil)
 )
 
-func NewLocalShardApi(shardId types.ShardId, db db.ReadOnlyDB, txnpool txnpool.Pool) *LocalShardApi {
+func NewLocalShardApi(shardId types.ShardId, db db.ReadOnlyDB, txnpool txnpool.Pool, enableDevApi bool) *LocalShardApi {
 	stateAccessor := execution.NewStateAccessor()
 	return &LocalShardApi{
-		db:       db,
-		accessor: stateAccessor,
-		ShardId:  shardId,
-		txnpool:  txnpool,
+		db:           db,
+		accessor:     stateAccessor,
+		ShardId:      shardId,
+		txnpool:      txnpool,
+		enableDevApi: enableDevApi,
 	}
 }
 

@@ -66,7 +66,7 @@ func (pp *blockPostprocessor) fillBlockHashAndTransactionIndexByTransactionHash(
 					return fmt.Errorf("fail to check transaction existence in DB: %w", err)
 				}
 				if ok {
-					return fmt.Errorf("fatal: duplicate transaction %x", hash)
+					return fmt.Errorf("fatal: duplicate transaction in %s: %x", table, hash)
 				}
 			}
 

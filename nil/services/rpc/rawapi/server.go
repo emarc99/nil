@@ -44,6 +44,7 @@ type NetworkTransportProtocolRo interface {
 type NetworkTransportProtocol interface {
 	NetworkTransportProtocolRo
 	SendTransaction(pb.SendTransactionRequest) pb.SendTransactionResponse
+	DoPanicOnShard() pb.Uint64Response
 }
 
 func SetRawApiRequestHandlers(

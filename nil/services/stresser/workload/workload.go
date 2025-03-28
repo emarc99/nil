@@ -92,6 +92,8 @@ func GetWorkload(name string) (Workload, error) {
 		wd = &SendRequests{}
 	case "blockchain_metrics":
 		wd = &BlockchainMetrics{}
+	case "do_panic":
+		wd = &DoPanic{}
 	default:
 		return nil, fmt.Errorf("unknown workload name: %s", name)
 	}

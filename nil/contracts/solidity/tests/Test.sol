@@ -278,4 +278,3 @@ contract Test is NilBase {
 }
 
 contract Empty {}
-

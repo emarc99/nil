@@ -239,6 +239,7 @@ func (s *Stresser) Run(ctx context.Context) error {
 			ExportMetrics: true,
 		}
 		nilConfig.RPCPort = 8529
+		nilConfig.EnableDevApi = false
 
 		go func() {
 			exitCode := nilservice.Run(ctx, nilConfig, badger, nil)
@@ -290,11 +291,14 @@ func (s *Stresser) runWorkload(ctx context.Context) error {
 	if err := s.client.WaitClusterReady(s.cfg.NumShards); err != nil {
 		return fmt.Errorf("failed to wait for rpc node: %w", err)
 	}
+	logger.Info().Msg("Cluster is ready, start deploying contracts...")
 
 	contracts, err := s.deployContracts()
 	if err != nil {
 		return fmt.Errorf("failed to deploy contracts: %w", err)
 	}
+
+	logger.Info().Msg("All contracts have been successfully deployed")
 
 	workloadArgs := &workload.WorkloadParams{Contracts: contracts, NumShards: s.cfg.NumShards}
 
@@ -309,16 +313,12 @@ func (s *Stresser) runWorkload(ctx context.Context) error {
 
 	go s.updateState(ctx)
 
-	tm := time.Now()
-	iteration := 0
+	logger.Info().Msg("Run workload main loop")
+
 	concurrent.RunTickerLoop(ctx, workloadInterval, func(ctx context.Context) {
 		if s.suspendWorkload.Load() {
 			return
 		}
-		if time.Since(tm) >= 1*time.Second {
-			tm = time.Now()
-		}
-		iteration += 1
 
 		for _, w := range s.workload {
 			if err := w.RunWorkload(workload.RunParams{}); err != nil {
@@ -434,9 +434,11 @@ func (s *Stresser) loadDevnetConfig(file string) error {
 	node := &NildInstance{Name: "nil-rpc-0", IsRpc: true}
 	s.nodes = append(s.nodes, node)
 
-	s.cfg.RpcPort, ok = cfg["nil_rpc_port"].(int)
-	if !ok {
-		return errors.New("can't parse nil_rpc_port")
+	if _, ok := cfg["nil_rpc_config"]; ok {
+		s.cfg.RpcPort, ok = cfg["nil_rpc_port"].(int)
+		if !ok {
+			return errors.New("can't parse nil_rpc_port")
+		}
 	}
 	return nil
 }
