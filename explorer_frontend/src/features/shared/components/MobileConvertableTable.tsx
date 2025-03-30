@@ -8,7 +8,7 @@ import {
 import { useStyletron } from "baseui";
 import type { ReactNode } from "react";
 import { StyledList } from "..";
-import { tableContainerStyles } from "../../../styleHelpers";
+import { scrollableContentStyles } from "../../../styleHelpers";
 
 export type MobileConvertableTable = {
   columns: ReactNode[];
@@ -63,7 +63,7 @@ export const MobileConvertableTable = ({ columns, data, isMobile }: MobileConver
   return (
     <div
       className={css({
-        ...tableContainerStyles,
+        ...scrollableContentStyles,
         flexGrow: 1,
       })}
     >

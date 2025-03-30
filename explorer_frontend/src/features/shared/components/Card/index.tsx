@@ -1,7 +1,6 @@
 import { useStyletron } from "baseui";
 import { expandProperty } from "inline-style-expand-shorthand";
 import type { ElementType } from "react";
-import { tableContainerStyles } from "../../../../styleHelpers";
 import { useMobile } from "../../hooks/useMobile";
 
 type CardProps = {
@@ -9,7 +8,6 @@ type CardProps = {
   as?: ElementType;
   className?: string;
   transparent?: boolean;
-  scrollable?: boolean;
 };
 
 export const Card = ({
@@ -17,7 +15,6 @@ export const Card = ({
   as: Element = "div",
   className = "",
   transparent,
-  scrollable,
 }: CardProps) => {
   const [css, theme] = useStyletron();
   const styles = {
@@ -30,7 +27,6 @@ export const Card = ({
       justifyContent: "center",
       alignItems: "flex-start",
       minWidth: "0",
-      ...(scrollable ? tableContainerStyles : {}),
     },
     mobileCard: {
       ...expandProperty("padding", "24px"),

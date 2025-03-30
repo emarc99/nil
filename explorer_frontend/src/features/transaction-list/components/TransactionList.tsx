@@ -19,7 +19,7 @@ import {
   fetchTransactionListFx,
   showList,
 } from "../model";
-
+import { scrollableContentStyles } from "../../../styleHelpers";
 export const TransactionList = ({ type, identifier, view }: TransactionListProps) => {
   const [isMobile] = useMobile();
   const [css] = useStyletron();
@@ -172,11 +172,13 @@ export const TransactionList = ({ type, identifier, view }: TransactionListProps
             }
           : {},
       )}
-      scrollable
     >
-      <InfoContainer title={isMobile ? "Transactions" : undefined}>
-        <MobileConvertableTable columns={columns} data={mappedTransactions} isMobile={isMobile} />
-      </InfoContainer>
+        <div className={css(scrollableContentStyles)}>
+          <InfoContainer title={isMobile ? "Transactions" : undefined}>
+            <MobileConvertableTable columns={columns} data={mappedTransactions} isMobile={isMobile} />
+          </InfoContainer>
+        </div>
+
     </Card>
   );
 };

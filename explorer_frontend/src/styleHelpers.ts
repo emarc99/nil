@@ -23,13 +23,15 @@ export const getDesktopStyles = (styles: StyleObject) => ({
   },
 });
 
-export const tableContainerStyles: StyleObject = {
-  overflowX: "auto" as const,
+export const scrollableContentStyles: StyleObject = {
   width: "100%",
-  [`@media screen and (min-width: ${mobileMaxScreenSize + 1}px)`]: {
+  ...getMobileStyles({
+    overflow: "hidden",
+  }),
+  ...getTabletStyles({
     overflowX: "auto" as const,
-  },
-  [`@media screen and (min-width: ${tabletMaxScreenSize + 1}px)`]: {
+  }),
+  ...getDesktopStyles({
     overflowX: "auto" as const,
-  },
+  }),
 };
