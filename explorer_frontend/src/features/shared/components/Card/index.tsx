@@ -1,8 +1,8 @@
 import { useStyletron } from "baseui";
 import { expandProperty } from "inline-style-expand-shorthand";
 import type { ElementType } from "react";
-import { useMobile } from "../../hooks/useMobile";
 import { tableContainerStyles } from "../../../../styleHelpers";
+import { useMobile } from "../../hooks/useMobile";
 
 type CardProps = {
   children: React.ReactNode;

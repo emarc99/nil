@@ -14,6 +14,7 @@ import type { OnChangeHandler, TabsOverrides } from "baseui/tabs";
 import { useUnit } from "effector-react";
 import { type Key, useEffect, useState } from "react";
 import { useStyletron } from "styletron-react";
+import { getDesktopStyles, getMobileStyles, getTabletStyles } from "../../../styleHelpers";
 import { useMobile } from "../../shared";
 import { TransactionList } from "../../transaction-list";
 import { $transaction, fetchTransactionFx } from "../models/transaction";
@@ -21,7 +22,6 @@ import { $transactionChilds, fetchTransactionChildsFx } from "../models/transact
 import { $transactionLogs, fetchTransactionLogsFx } from "../models/transactionLogs";
 import { Logs } from "./Logs";
 import { Overview } from "./Overview";
-import { getMobileStyles, getTabletStyles, getDesktopStyles } from "../../../styleHelpers";
 
 export const Transaction = () => {
   const [css] = useStyletron();

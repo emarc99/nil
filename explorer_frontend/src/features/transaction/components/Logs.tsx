@@ -3,10 +3,10 @@ import { ParagraphLarge, ParagraphSmall } from "baseui/typography";
 import { expandProperty } from "inline-style-expand-shorthand";
 import type { FC } from "react";
 import { type StyleObject, useStyletron } from "styletron-react";
+import { tableContainerStyles } from "../../../styleHelpers";
 import { addressRoute } from "../../routing";
 import { Card, Link, addHexPrefix } from "../../shared";
 import type { TransactionLog } from "../types/TransactionLog";
-import { tableContainerStyles } from "../../../styleHelpers";
 import noLog from "./assets/no-log.svg";
 
 type LogsProps = {
