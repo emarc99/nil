@@ -12,9 +12,9 @@ export const getMobileStyles = (styles: StyleObject) => ({
 
 export const getTabletStyles = (styles: StyleObject) => ({
   [`@media screen and (min-width: ${mobileMaxScreenSize + 1}px) and (max-width: ${tabletMaxScreenSize}px)`]:
-  {
-    ...styles,
-  },
+    {
+      ...styles,
+    },
 });
 
 export const getDesktopStyles = (styles: StyleObject) => ({

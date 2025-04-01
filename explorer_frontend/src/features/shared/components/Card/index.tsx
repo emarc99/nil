@@ -10,12 +10,7 @@ type CardProps = {
   transparent?: boolean;
 };
 
-export const Card = ({
-  children,
-  as: Element = "div",
-  className = "",
-  transparent,
-}: CardProps) => {
+export const Card = ({ children, as: Element = "div", className = "", transparent }: CardProps) => {
   const [css, theme] = useStyletron();
   const styles = {
     card: {
