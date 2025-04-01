@@ -753,7 +753,7 @@ func (es *ExecutionState) CreateAccount(addr types.Address) error {
 func (es *ExecutionState) createAccount(addr types.Address) (*AccountState, error) {
 	if addr.ShardId() != es.ShardId {
 		return nil, fmt.Errorf(
-			"Attempt to create account %v from %v shard on %v shard", addr, addr.ShardId(), es.ShardId)
+			"attempt to create account %v from %v shard on %v shard", addr, addr.ShardId(), es.ShardId)
 	}
 	acc, err := es.GetAccount(addr)
 	if err != nil {
@@ -1143,7 +1143,7 @@ func (es *ExecutionState) HandleTransaction(
 	if txn.IsRequest() {
 		if !es.wasAwaitCall {
 			if err := es.SendResponseTransaction(txn, res); err != nil {
-				return NewExecutionResult().SetFatal(fmt.Errorf("SendResponseTransaction failed: %w\n", err))
+				return NewExecutionResult().SetFatal(fmt.Errorf("SendResponseTransaction failed: %w", err))
 			}
 			bounced = true
 			responseWasSent = true
@@ -1152,7 +1152,7 @@ func (es *ExecutionState) HandleTransaction(
 		// There is pending requests in the chain, so we need to send response to them.
 		// But we don't send response if a new request was sent during the execution.
 		if err := es.SendResponseTransaction(txn, res); err != nil {
-			return NewExecutionResult().SetFatal(fmt.Errorf("SendResponseTransaction failed: %w\n", err))
+			return NewExecutionResult().SetFatal(fmt.Errorf("SendResponseTransaction failed: %w", err))
 		}
 		responseWasSent = true
 	}

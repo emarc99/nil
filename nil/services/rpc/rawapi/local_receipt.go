@@ -7,6 +7,7 @@ import (
 
 	fastssz "github.com/NilFoundation/fastssz"
 	"github.com/NilFoundation/nil/nil/common"
+	"github.com/NilFoundation/nil/nil/common/logging"
 	"github.com/NilFoundation/nil/nil/internal/db"
 	"github.com/NilFoundation/nil/nil/internal/execution"
 	"github.com/NilFoundation/nil/nil/internal/mpt"
@@ -50,11 +51,13 @@ func (api *LocalShardApi) GetInTransactionReceipt(
 			return nil, err
 		}
 
-		priorityFee, ok := execution.GetEffectivePriorityFee(block.BaseFee, transaction)
-		if !ok {
-			return nil, errors.New("critical error: effective priority fee is invalid")
+		if priorityFee, ok := execution.GetEffectivePriorityFee(block.BaseFee, transaction); ok {
+			gasPrice = block.BaseFee.Add(priorityFee)
+		} else if receipt.Status != types.ErrorBaseFeeTooHigh {
+			api.logger.Error().
+				Stringer(logging.FieldTransactionHash, hash).
+				Msgf("Calculation of EffectivePriorityFee failed with wrong status: %s", receipt.Status)
 		}
-		gasPrice = block.BaseFee.Add(priorityFee)
 
 		// Check if the transaction is included in the main chain
 		rawMainBlock, err := api.nodeApi.GetFullBlockData(

@@ -204,7 +204,7 @@ func (s *SuiteExecutionState) TestExecStateMultipleBlocks() {
 		txnRead, err := transactionsRoot.Fetch(idx)
 		s.Require().NoError(err)
 
-		s.EqualValues(txn, txnRead)
+		s.Equal(txn, txnRead)
 	}
 
 	check(blockHash1, 0, txn1)
@@ -615,11 +615,11 @@ func (s *SuiteExecutionState) TestPrecompiles() {
 
 		gasPrice = types.DefaultGasPrice.Add(gasScale.Mul(types.Value10))
 		gas = vm.GetExtraGasForOutboundTransaction(state, types.ShardId(2))
-		s.EqualValues(vm.ExtraForwardFeeStep*10, gas)
+		s.Equal(vm.ExtraForwardFeeStep*10, gas)
 
 		gasPrice = types.DefaultGasPrice.Add(gasScale.Mul(types.NewValueFromUint64(101)))
 		gas = vm.GetExtraGasForOutboundTransaction(state, types.ShardId(2))
-		s.EqualValues(vm.ExtraForwardFeeStep*101, gas)
+		s.Equal(vm.ExtraForwardFeeStep*101, gas)
 	})
 }
 

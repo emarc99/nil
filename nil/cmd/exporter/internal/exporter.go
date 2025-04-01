@@ -51,15 +51,19 @@ func StartExporter(ctx context.Context, cfg *Cfg) error {
 		return fmt.Errorf("failed to setup exporter: %w", err)
 	}
 
-	workers := make([]concurrent.FuncWithSource, 0, len(shards)+1)
-	for _, shard := range shards {
-		workers = append(workers, concurrent.WithSource(func(ctx context.Context) error {
-			return e.startFetchers(ctx, shard)
-		}))
+	workers := make([]concurrent.Task, 0, len(shards)+1)
+	for i, shard := range shards {
+		workers = append(workers, concurrent.MakeTask(
+			fmt.Sprintf("[%d] fetcher", i),
+			func(ctx context.Context) error {
+				return e.startFetchers(ctx, shard)
+			}))
 	}
-	workers = append(workers, concurrent.WithSource(func(ctx context.Context) error {
-		return e.startDriverExport(ctx)
-	}))
+	workers = append(workers, concurrent.MakeTask(
+		"driver export",
+		func(ctx context.Context) error {
+			return e.startDriverExport(ctx)
+		}))
 
 	return concurrent.Run(ctx, workers...)
 }
@@ -122,12 +126,16 @@ func (e *exporter) startFetchers(ctx context.Context, shardId types.ShardId) err
 	}
 
 	return concurrent.Run(ctx,
-		concurrent.WithSource(func(ctx context.Context) error {
-			return e.runTopFetcher(ctx, shardId, lastProcessedBlock+1)
-		}),
-		concurrent.WithSource(func(ctx context.Context) error {
-			return e.runBottomFetcher(ctx, shardId, lastProcessedBlock)
-		}),
+		concurrent.MakeTask(
+			fmt.Sprintf("[%d] top fetcher", shardId),
+			func(ctx context.Context) error {
+				return e.runTopFetcher(ctx, shardId, lastProcessedBlock+1)
+			}),
+		concurrent.MakeTask(
+			fmt.Sprintf("[%d] bottom fetcher", shardId),
+			func(ctx context.Context) error {
+				return e.runBottomFetcher(ctx, shardId, lastProcessedBlock)
+			}),
 	)
 }
 

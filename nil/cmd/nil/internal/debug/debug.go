@@ -156,7 +156,7 @@ func (d *DebugHandler) SelectFailedReceipts() []*ReceiptInfo {
 func (d *DebugHandler) PrintSourceLocation(receipt *ReceiptInfo, loc *cometa.Location) error {
 	lines, err := receipt.Contract.GetSourceLines(loc.FileName)
 	if err != nil {
-		return fmt.Errorf("Failed to fetch the source lines: %w\n", err)
+		return fmt.Errorf("failed to fetch the source lines: %w", err)
 	}
 	startLine := int(loc.Line) - 3
 	if startLine < 1 {

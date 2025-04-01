@@ -87,7 +87,7 @@ func (api *LocalShardApi) handleOutTransactions(
 	outTransactions := make([]*rpctypes.OutTransaction, len(outTxns))
 
 	for i, outTxn := range outTxns {
-		raw, err := outTxn.Transaction.MarshalSSZ()
+		raw, err := outTxn.MarshalSSZ()
 		if err != nil {
 			return nil, err
 		}

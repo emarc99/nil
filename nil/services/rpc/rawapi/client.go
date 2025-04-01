@@ -241,6 +241,14 @@ func (api *ShardApiAccessor) DoPanicOnShard(ctx context.Context) (uint64, error)
 	return sendRequestAndGetResponseWithCallerMethodName[uint64](ctx, api, "DoPanicOnShard")
 }
 
+func (api *ShardApiAccessor) GetTxpoolStatus(ctx context.Context) (uint64, error) {
+	return sendRequestAndGetResponseWithCallerMethodName[uint64](ctx, api, "GetTxpoolStatus")
+}
+
+func (api *ShardApiAccessor) GetTxpoolContent(ctx context.Context) ([]*types.Transaction, error) {
+	return sendRequestAndGetResponseWithCallerMethodName[[]*types.Transaction](ctx, api, "GetTxpoolContent")
+}
+
 func (api *ShardApiAccessor) setNodeApi(nodeApi NodeApi) {
 	api.onSetNodeApi(nodeApi)
 }
@@ -276,7 +284,7 @@ func discoverAppropriatePeer(
 ) (network.PeerID, error) {
 	peersWithSpecifiedShard := networkManager.GetPeersForProtocol(protocol)
 	if len(peersWithSpecifiedShard) == 0 {
-		return "", fmt.Errorf("No peers with shard %d found", shardId)
+		return "", fmt.Errorf("no peers with shard %d found", shardId)
 	}
 	return peersWithSpecifiedShard[0], nil
 }

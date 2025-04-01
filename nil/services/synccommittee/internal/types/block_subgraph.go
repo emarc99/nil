@@ -10,6 +10,8 @@ import (
 // ShardChainSegment represents a sequence of blocks in a shard
 type ShardChainSegment []*Block
 
+var EmptyChainSegment = make(ShardChainSegment, 0)
+
 // Earliest retrieves the first block in the segment
 func (s ShardChainSegment) Earliest() *Block {
 	if len(s) == 0 {

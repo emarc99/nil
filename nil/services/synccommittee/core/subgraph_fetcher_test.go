@@ -6,6 +6,7 @@ import (
 
 	"github.com/NilFoundation/nil/nil/client"
 	"github.com/NilFoundation/nil/nil/common/logging"
+	coreTypes "github.com/NilFoundation/nil/nil/internal/types"
 	"github.com/NilFoundation/nil/nil/services/synccommittee/internal/testaide"
 	"github.com/NilFoundation/nil/nil/services/synccommittee/internal/types"
 	"github.com/stretchr/testify/suite"
@@ -83,4 +84,32 @@ func (s *SubgraphFetcherTestSuite) Test_Fetch_No_Latest_Refs() {
 
 	expectedSubgraph := targetBatch.Subgraphs[len(targetBatch.Subgraphs)-1]
 	s.Require().Equal(expectedSubgraph, *subgraph)
+}
+
+func (s *SubgraphFetcherTestSuite) Test_No_Progress_In_Exec_Shard() {
+	batches := testaide.NewBatchesSequence(1)
+	testaide.ClientMockSetBatches(s.rpcClientMock, batches)
+	batch := batches[0]
+
+	// emulate that no new blocks on shard 1 were produced
+	noProgressShardId := coreTypes.ShardId(1)
+	shardRef := batch.LatestRefs().TryGet(noProgressShardId)
+	latestFetched := make(types.BlockRefs)
+	latestFetched[1] = *shardRef
+
+	subgraph, err := s.fetcher.FetchSubgraph(s.ctx, batch.LatestMainBlock(), latestFetched)
+	s.Require().NoError(err)
+
+	batchSubgraph := batch.Subgraphs[len(batch.Subgraphs)-1]
+	s.Len(subgraph.Children, len(batchSubgraph.Children)-1)
+	s.Equal(batchSubgraph.Main, subgraph.Main)
+
+	for shardId, expectedSegment := range batchSubgraph.Children {
+		if shardId == noProgressShardId {
+			continue
+		}
+		actualSegment, ok := subgraph.Children[shardId]
+		s.True(ok, "shard %d not found in subgraph", shardId)
+		s.Equal(expectedSegment, actualSegment, "shard %d segment mismatch", shardId)
+	}
 }

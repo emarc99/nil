@@ -24,10 +24,10 @@ func main() {
 			zerolog.SetGlobalLevel(level)
 			st, err := stresser.NewStresserFromFile(configFile)
 			if err != nil {
-				return fmt.Errorf("Failed to create stresser: %w", err)
+				return fmt.Errorf("failed to create stresser: %w", err)
 			}
 			if err = st.Run(context.Background()); err != nil {
-				return fmt.Errorf("Failed to run stresser: %w", err)
+				return fmt.Errorf("failed to run stresser: %w", err)
 			}
 			return nil
 		},

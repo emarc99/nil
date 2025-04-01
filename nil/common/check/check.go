@@ -1,6 +1,8 @@
 package check
 
 import (
+	"context"
+	"errors"
 	"fmt"
 
 	"github.com/NilFoundation/nil/nil/common/logging"
@@ -41,6 +43,15 @@ func PanicIfErr(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+// PanicIfNotCancelledErr panics if the provided error is non-nil and not a context.Canceled error.
+func PanicIfNotCancelledErr(err error) {
+	if err == nil || errors.Is(err, context.Canceled) {
+		return
+	}
+
+	panic(err)
 }
 
 // LogAndPanicIfErrf logs the error with the provided logger and message and panics if err is not nil.

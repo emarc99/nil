@@ -261,12 +261,12 @@ func (s *TracerNildTestSuite) checkTracesSerialization(traces *ExecutionTraces) 
 
 	// Check if no data was lost after deserialization
 
-	s.Require().Equal(len(deserializedTraces.StackOps), len(traces.StackOps))
-	s.Require().Equal(len(deserializedTraces.MemoryOps), len(traces.MemoryOps))
-	s.Require().Equal(len(deserializedTraces.StorageOps), len(traces.StorageOps))
-	s.Require().Equal(len(deserializedTraces.ContractsBytecode), len(traces.ContractsBytecode))
-	s.Require().Equal(len(deserializedTraces.CopyEvents), len(traces.CopyEvents))
-	s.Require().Equal(len(deserializedTraces.ZKEVMStates), len(traces.ZKEVMStates))
+	s.Require().Len(traces.StackOps, len(deserializedTraces.StackOps))
+	s.Require().Len(traces.MemoryOps, len(deserializedTraces.MemoryOps))
+	s.Require().Len(traces.StorageOps, len(deserializedTraces.StorageOps))
+	s.Require().Len(traces.ContractsBytecode, len(deserializedTraces.ContractsBytecode))
+	s.Require().Len(traces.CopyEvents, len(deserializedTraces.CopyEvents))
+	s.Require().Len(traces.ZKEVMStates, len(deserializedTraces.ZKEVMStates))
 }
 
 // Even smart account deploy is handled in multiple blocks, trace last N blocks for each shard to include

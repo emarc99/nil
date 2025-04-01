@@ -99,18 +99,18 @@ func (s *NilBlockGeneratorTestSuite) TearDownTest() {
 func (s *NilBlockGeneratorTestSuite) TestGetBlock() {
 	smartAccountAdr, hexKey, err := CreateNewSmartAccount(s.url, s.logger)
 	s.Require().NoError(err)
-	s.Require().NotEqual("", smartAccountAdr)
-	s.Require().NotEqual("", hexKey)
+	s.Require().NotEmpty(smartAccountAdr)
+	s.Require().NotEmpty(hexKey)
 
 	contractAddress, err := DeployContract(s.url, smartAccountAdr, s.contractBasePath, hexKey, s.deployArgs, s.logger)
 	s.Require().NoError(err)
-	s.Require().NotEqual("", contractAddress)
+	s.Require().NotEmpty(contractAddress)
 
 	var calls []Call
 	calls = append(calls, *NewCall(s.contractName, s.method, s.contractBasePath+".abi", contractAddress, s.callArgs, 1))
 	blockHash, err := CallContract(s.url, smartAccountAdr, hexKey, calls, s.logger)
 	s.Require().NoError(err)
-	s.Require().NotEqual("", blockHash)
+	s.Require().NotEmpty(blockHash)
 }
 
 func TestNilBlockGeneratorTestSuite(t *testing.T) {

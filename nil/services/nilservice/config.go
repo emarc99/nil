@@ -171,7 +171,7 @@ func (c *Config) Validate() error {
 
 	for _, shard := range c.MyShards {
 		if shard >= uint(c.NShards) {
-			return fmt.Errorf("Shard %d is out of range (nShards = %d)", shard, c.NShards)
+			return fmt.Errorf("shard %d is out of range (nShards = %d)", shard, c.NShards)
 		}
 	}
 

@@ -57,12 +57,14 @@ func RandomShardId() types.ShardId {
 
 func NewRpcInTransaction() *jsonrpc.RPCInTransaction {
 	return &jsonrpc.RPCInTransaction{
-		Flags: types.NewTransactionFlags(types.TransactionFlagInternal, types.TransactionFlagRefund),
-		Seqno: 10,
-		From:  types.HexToAddress("0x0002F09EC9F5cCA264eba822BB887f5c900c6e71"),
-		To:    types.HexToAddress("0x0002F09EC9F5cCA264eba822BB887f5c900c6e72"),
-		Value: types.NewValue(uint256.NewInt(1000)),
-		Data:  []byte{10, 20, 30, 40},
+		Transaction: jsonrpc.Transaction{
+			Flags: types.NewTransactionFlags(types.TransactionFlagInternal, types.TransactionFlagRefund),
+			Seqno: 10,
+			From:  types.HexToAddress("0x0002F09EC9F5cCA264eba822BB887f5c900c6e71"),
+			To:    types.HexToAddress("0x0002F09EC9F5cCA264eba822BB887f5c900c6e72"),
+			Value: types.NewValue(uint256.NewInt(1000)),
+			Data:  []byte{10, 20, 30, 40},
+		},
 	}
 }
 
@@ -153,15 +155,9 @@ func NewExecutionShardBlock() *scTypes.Block {
 }
 
 func NewProposalData(txCount int, currentTime time.Time) *scTypes.ProposalData {
-	transactions := make([]scTypes.PrunedTransaction, 0, txCount)
-	for range txCount {
-		tx := scTypes.NewTransaction(NewRpcInTransaction())
-		transactions = append(transactions, tx)
-	}
-
 	return scTypes.NewProposalData(
 		scTypes.NewBatchId(),
-		transactions,
+		scTypes.DataProofs{},
 		RandomHash(),
 		RandomHash(),
 		currentTime.Add(-time.Hour),

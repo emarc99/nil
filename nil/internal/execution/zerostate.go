@@ -186,10 +186,9 @@ func (es *ExecutionState) GenerateZeroState(stateConfig *ZeroStateConfig) error 
 		for _, arg := range contract.CtorArgs {
 			switch arg := arg.(type) {
 			case string:
-				switch {
-				case arg[:2] == "0x":
+				if arg[:2] == "0x" {
 					args = append(args, hexutil.FromHex(arg))
-				default:
+				} else {
 					return fmt.Errorf("unknown constructor argument string pattern: %s", arg)
 				}
 			default:

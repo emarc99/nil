@@ -170,12 +170,16 @@ const config = {
                 href: "https://explore.nil.foundation/",
               },
               {
-                label: "Solidity extension",
-                href: "https://www.npmjs.com/package/@nilfoundation/smart-contracts",
+                label: "Playground",
+                href: "https://explore.nil.foundation/playground"
               },
               {
-                label: "=nil; CLI",
-                href: "https://github.com/NilFoundation/nil/tree/main/nil/cmd/nil",
+                label: "Interactive tutorials",
+                href: "https://explore.nil.foundation/tutorial/async-call"
+              },
+              {
+                label: "Solidity extension",
+                href: "https://www.npmjs.com/package/@nilfoundation/smart-contracts",
               },
               {
                 label: "Client library",

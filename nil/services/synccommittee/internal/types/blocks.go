@@ -268,9 +268,11 @@ func NewTransaction(transaction *jsonrpc.RPCInTransaction) PrunedTransaction {
 	}
 }
 
+type DataProofs [][]byte
+
 type ProposalData struct {
 	BatchId             BatchId
-	Transactions        []PrunedTransaction
+	DataProofs          DataProofs
 	OldProvedStateRoot  common.Hash
 	NewProvedStateRoot  common.Hash
 	FirstBlockFetchedAt time.Time
@@ -278,14 +280,14 @@ type ProposalData struct {
 
 func NewProposalData(
 	batchId BatchId,
-	transactions []PrunedTransaction,
+	dataProofs DataProofs,
 	oldProvedStateRoot common.Hash,
 	newProvedStateRoot common.Hash,
 	mainBlockFetchedAt time.Time,
 ) *ProposalData {
 	return &ProposalData{
 		BatchId:             batchId,
-		Transactions:        transactions,
+		DataProofs:          dataProofs,
 		OldProvedStateRoot:  oldProvedStateRoot,
 		NewProvedStateRoot:  newProvedStateRoot,
 		FirstBlockFetchedAt: mainBlockFetchedAt,

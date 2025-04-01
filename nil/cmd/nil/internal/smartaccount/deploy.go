@@ -139,7 +139,7 @@ func runDeploy(cmd *cobra.Command, cmdArgs []string, cfg *common.Config) error {
 	if err != nil {
 		if errors.Is(err, rpc.ErrTxnDataTooLong) {
 			return fmt.Errorf(
-				`Failed to marshal transaction: %w.
+				`failed to marshal transaction: %w.
 It appears that your code exceeds the maximum supported size.
 Try compiling your contract with the usage of solc --optimize flag,
 providing small values to --optimize-runs.

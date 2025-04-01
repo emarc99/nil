@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 
 	ssz "github.com/NilFoundation/fastssz"
 	"github.com/NilFoundation/nil/nil/common"
@@ -60,6 +61,10 @@ type Seqno uint64
 
 func (seqno Seqno) Uint64() uint64 {
 	return uint64(seqno)
+}
+
+func (seqno Seqno) String() string {
+	return strconv.FormatUint(uint64(seqno), 10)
 }
 
 type TransactionIndex uint64

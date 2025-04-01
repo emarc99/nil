@@ -22,6 +22,7 @@ type batchEntry struct {
 	ParentRefs          map[types.ShardId]*scTypes.BlockRef `json:"parentRefs"`
 	LatestMainBlockHash common.Hash                         `json:"latestMainBlockHash"`
 	BlockIds            []scTypes.BlockId                   `json:"blockIds"`
+	DataProofs          scTypes.DataProofs                  `json:"dataProofs"`
 
 	IsProved  bool      `json:"isProved,omitempty"`
 	CreatedAt time.Time `json:"createdAt"`
@@ -39,6 +40,7 @@ func newBatchEntry(batch *scTypes.BlockBatch, createdAt time.Time) *batchEntry {
 		ParentRefs:          batch.ParentRefs(),
 		LatestMainBlockHash: batch.LatestMainBlock().Hash,
 		BlockIds:            batch.BlockIds(),
+		DataProofs:          batch.DataProofs,
 
 		IsProved:  false,
 		CreatedAt: createdAt,

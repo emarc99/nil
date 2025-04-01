@@ -6,13 +6,23 @@ import (
 	"runtime/debug"
 	"sync"
 	"time"
+
+	"github.com/dlsniper/debugger"
+)
+
+type LabelContextKey string
+
+const (
+	TaskNameLabel                        = "taskName"
+	RootContextNameLabel LabelContextKey = "rootContextName"
 )
 
 type Func = func(context.Context) error
 
-type FuncWithSource struct {
+type Task struct {
 	Func
-	Stack string
+	Stack    string
+	TaskName string
 }
 
 type ExecutionError struct {
@@ -32,8 +42,8 @@ func (e *ExecutionError) Error() string {
 	return fmt.Sprintf("goroutine failed: %s. Function was created at: %s", e.Err.Error(), location)
 }
 
-func WithSource(f Func) FuncWithSource {
-	return FuncWithSource{
+func MakeTask(taskName string, f Func) Task {
+	return Task{
 		Func: f,
 		Stack: func(stack []byte) string {
 			// We could use an approach like in dd-trace-go
@@ -50,6 +60,7 @@ func WithSource(f Func) FuncWithSource {
 			}
 			return ""
 		}(debug.Stack()),
+		TaskName: taskName,
 	}
 }
 
@@ -58,7 +69,7 @@ func WithSource(f Func) FuncWithSource {
 // If timeout is positive, it is added to the context. Otherwise, it is ignored.
 // Note that RunWithTimeout does not forcefully terminate the goroutines;
 // your functions should be able to handle context cancellation.
-func RunWithTimeout(ctx context.Context, timeout time.Duration, fs ...FuncWithSource) error {
+func RunWithTimeout(ctx context.Context, timeout time.Duration, tasks ...Task) error {
 	var wg sync.WaitGroup
 
 	var cancel context.CancelFunc
@@ -71,21 +82,32 @@ func RunWithTimeout(ctx context.Context, timeout time.Duration, fs ...FuncWithSo
 
 	var once sync.Once
 	var originError error
-	for _, f := range fs {
+	for _, t := range tasks {
 		wg.Add(1)
 
-		go func(fn FuncWithSource) {
+		go func(task Task) {
+			taskName := task.TaskName
+			rootContextName, ok := ctx.Value(RootContextNameLabel).(string)
+			if !ok {
+				rootContextName = "<unknown>"
+			}
+			debugger.SetLabels(func() []string {
+				return []string{
+					TaskNameLabel, taskName,
+					string(RootContextNameLabel), rootContextName,
+				}
+			})
 			defer wg.Done()
-			if err := fn.Func(ctx); err != nil {
+			if err := task.Func(ctx); err != nil {
 				once.Do(func() {
 					originError = &ExecutionError{
 						Err:   err,
-						Stack: fn.Stack,
+						Stack: task.Stack,
 					}
 					cancel()
 				})
 			}
-		}(f) // to avoid loop-variable reuse in goroutines
+		}(t) // to avoid loop-variable reuse in goroutines
 	}
 
 	wg.Wait()
@@ -93,7 +115,7 @@ func RunWithTimeout(ctx context.Context, timeout time.Duration, fs ...FuncWithSo
 }
 
 // Run calls RunWithTimeout without a timeout.
-func Run(ctx context.Context, fs ...FuncWithSource) error {
+func Run(ctx context.Context, fs ...Task) error {
 	return RunWithTimeout(ctx, 0, fs...)
 }
 

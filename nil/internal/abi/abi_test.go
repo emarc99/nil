@@ -16,8 +16,6 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with Erigon. If not, see <http://www.gnu.org/licenses/>.
-//
-//nolint:scopelint
 package abi
 
 import (
@@ -369,7 +367,7 @@ func TestInvalidABI(t *testing.T) {
 	if err == nil {
 		t.Fatal("invalid json should produce error")
 	}
-	json2 := `[{ 
+	json2 := `[{
 		"type" : "function",
 		"name" : "send",
 		"constant" : false,
@@ -1496,12 +1494,12 @@ func TestABI_EventById(t *testing.T) {
 		}, {
 			name: "",
 			json: `[{
-				"constant": true, 
-				"inputs": [], 
-				"name": "name", 
-				"outputs": [ { "name": "", "type": "string" } ], 
-				"payable": false, 
-				"stateMutability": "view", 
+				"constant": true,
+				"inputs": [],
+				"name": "name",
+				"outputs": [ { "name": "", "type": "string" } ],
+				"payable": false,
+				"stateMutability": "view",
 				"type": "function"
 			}, {
 				"constant": false,
@@ -1515,15 +1513,15 @@ func TestABI_EventById(t *testing.T) {
 				"stateMutability": "nonpayable",
 				"type": "function"
 			}, {
-				"constant": true, 
-				"inputs": [], 
-				"name": "totalSupply", 
-				"outputs": [ { "name": "", "type": "uint256" } ], 
-				"payable": false, 
-				"stateMutability": "view", 
+				"constant": true,
+				"inputs": [],
+				"name": "totalSupply",
+				"outputs": [ { "name": "", "type": "uint256" } ],
+				"payable": false,
+				"stateMutability": "view",
 				"type": "function"
 			}, {
-				"constant": false, 
+				"constant": false,
 				"inputs": [
 					{ "name": "_from", "type": "address" },
 					{ "name": "_to", "type": "address" },
@@ -1535,31 +1533,31 @@ func TestABI_EventById(t *testing.T) {
 				"stateMutability": "nonpayable",
 				"type": "function"
 			}, {
-				"constant": true, 
-				"inputs": [], 
-				"name": "decimals", 
-				"outputs": [ { "name": "", "type": "uint8" } ], 
-				"payable": false, 
-				"stateMutability": "view", 
+				"constant": true,
+				"inputs": [],
+				"name": "decimals",
+				"outputs": [ { "name": "", "type": "uint8" } ],
+				"payable": false,
+				"stateMutability": "view",
 				"type": "function"
 			}, {
-				"constant": true, 
-				"inputs": [ { "name": "_owner", "type": "address" } ], 
-				"name": "balanceOf", 
+				"constant": true,
+				"inputs": [ { "name": "_owner", "type": "address" } ],
+				"name": "balanceOf",
 				"outputs": [ { "name": "balance", "type": "uint256" } ],
 				"payable": false,
 				"stateMutability": "view",
 				"type": "function"
 			}, {
 				"constant": true,
-				"inputs": [], 
-				"name": "symbol", 
-				"outputs": [ { "name": "", "type": "string" } ], 
-				"payable": false, 
-				"stateMutability": "view", 
+				"inputs": [],
+				"name": "symbol",
+				"outputs": [ { "name": "", "type": "string" } ],
+				"payable": false,
+				"stateMutability": "view",
 				"type": "function"
 			}, {
-				"constant": false, 
+				"constant": false,
 				"inputs": [
 					{ "name": "_to", "type": "address" },
 					{ "name": "_value", "type": "uint256" }

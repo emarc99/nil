@@ -319,7 +319,7 @@ func (s *SuiteRpc) TestRpcCallWithTransactionSend() { //nolint:maintidx
 
 		txnEstimation, err = s.Client.EstimateFee(s.Context, callArgs, "latest")
 		s.Require().NoError(err)
-		s.Positive(txnEstimation.FeeCredit.Uint64())
+		s.NotZero(txnEstimation.FeeCredit.Uint64())
 	})
 
 	intTxn := &types.InternalTransactionPayload{
@@ -349,7 +349,7 @@ func (s *SuiteRpc) TestRpcCallWithTransactionSend() { //nolint:maintidx
 	s.Run("Estimate external transaction fee", func() {
 		estimation, err = s.Client.EstimateFee(s.Context, callArgs, "latest")
 		s.Require().NoError(err)
-		s.Positive(estimation.FeeCredit.Uint64())
+		s.NotZero(estimation.FeeCredit.Uint64())
 	})
 
 	s.Run("Call without override", func() {

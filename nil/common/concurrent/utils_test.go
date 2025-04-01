@@ -16,10 +16,10 @@ func TestRunWithTimeout_AllFunctionsSucceed(t *testing.T) {
 	err := RunWithTimeout(
 		t.Context(),
 		1*time.Second,
-		WithSource(func(ctx context.Context) error {
+		MakeTask("", func(ctx context.Context) error {
 			return nil
 		}),
-		WithSource(func(ctx context.Context) error {
+		MakeTask("", func(ctx context.Context) error {
 			return nil
 		}))
 	require.NoError(t, err)
@@ -33,10 +33,10 @@ func TestRunWithTimeout_FunctionFails(t *testing.T) {
 		err := RunWithTimeout(
 			t.Context(),
 			1*time.Second,
-			WithSource(func(ctx context.Context) error {
+			MakeTask("", func(ctx context.Context) error {
 				return errTest
 			}),
-			WithSource(func(ctx context.Context) error {
+			MakeTask("", func(ctx context.Context) error {
 				time.Sleep(50 * time.Millisecond)
 				synctestWait()
 				return ctx.Err()
@@ -56,7 +56,7 @@ func TestRunWithTimeout_TimeoutExceededWithContextCheck(t *testing.T) {
 		err := RunWithTimeout(
 			t.Context(),
 			10*time.Millisecond,
-			WithSource(func(ctx context.Context) error {
+			MakeTask("", func(ctx context.Context) error {
 				time.Sleep(50 * time.Millisecond)
 				synctestWait()
 				return ctx.Err()
@@ -73,7 +73,7 @@ func TestRunWithTimeout_TimeoutExceededWithoutContextCheck(t *testing.T) {
 		err := RunWithTimeout(
 			t.Context(),
 			10*time.Millisecond,
-			WithSource(func(ctx context.Context) error {
+			MakeTask("", func(ctx context.Context) error {
 				time.Sleep(50 * time.Millisecond)
 				synctestWait()
 				return nil

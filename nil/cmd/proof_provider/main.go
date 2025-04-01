@@ -21,7 +21,7 @@ type cmdConfig struct {
 }
 
 func main() {
-	check.PanicIfErr(execute())
+	check.PanicIfNotCancelledErr(execute())
 }
 
 func execute() error {
@@ -76,6 +76,12 @@ func addFlags(cmd *cobra.Command, cfg *cmdConfig) {
 		cfg.SkipRate,
 		"rate of skip tasks, will skip N from 10, where N is value of option (0 means no skip)."+
 			" Possible values: [0,10]")
+	cmd.Flags().Uint32Var(
+		&cfg.MaxConcurrentBatches,
+		"max-concurrent-batches",
+		cfg.MaxConcurrentBatches,
+		"maximum value of batches that proof provider can handle concurrently",
+	)
 	logLevel := cmd.Flags().String(
 		"log-level",
 		"info",

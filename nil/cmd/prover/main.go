@@ -19,7 +19,7 @@ import (
 )
 
 func main() {
-	check.PanicIfErr(execute())
+	check.PanicIfNotCancelledErr(execute())
 }
 
 type CommonConfig = prover.Config

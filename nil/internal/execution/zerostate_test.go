@@ -112,7 +112,7 @@ func (s *SuiteZeroState) TestWithdrawFromFaucet() {
 	faucetBalance = faucetBalance.Sub64(100)
 	newFaucetBalance := s.getBalance(s.faucetAddr)
 	s.Require().Negative(newFaucetBalance.Cmp(faucetBalance))
-	s.Require().EqualValues(types.NewValueFromUint64(100), s.getBalance(receiverAddr))
+	s.Require().Equal(types.NewValueFromUint64(100), s.getBalance(receiverAddr))
 }
 
 func TestZerostateFromConfig(t *testing.T) {

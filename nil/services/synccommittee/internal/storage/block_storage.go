@@ -115,6 +115,24 @@ func (bs *BlockStorage) TryGetLatestBatchId(ctx context.Context) (*scTypes.Batch
 	return bs.ops.getLatestBatchId(tx)
 }
 
+func (bs *BlockStorage) BatchExists(ctx context.Context, batchId scTypes.BatchId) (bool, error) {
+	tx, err := bs.database.CreateRoTx(ctx)
+	if err != nil {
+		return false, err
+	}
+	defer tx.Rollback()
+
+	_, err = bs.ops.getBatch(tx, batchId)
+	switch {
+	case err == nil:
+		return true, nil
+	case errors.Is(err, scTypes.ErrBatchNotFound):
+		return false, nil
+	default:
+		return false, err
+	}
+}
+
 func (bs *BlockStorage) GetLatestFetched(ctx context.Context) (scTypes.BlockRefs, error) {
 	tx, err := bs.database.CreateRoTx(ctx)
 	if err != nil {
@@ -290,8 +308,6 @@ func (bs *BlockStorage) createProposalDataTx(
 	proposalCandidate *batchEntry,
 	currentProvedStateRoot common.Hash,
 ) (*scTypes.ProposalData, error) {
-	transactions := make([]scTypes.PrunedTransaction, 0)
-
 	var firstBlockFetchedAt time.Time
 
 	for i, blockId := range proposalCandidate.BlockIds {
@@ -302,14 +318,11 @@ func (bs *BlockStorage) createProposalDataTx(
 		if i == 0 {
 			firstBlockFetchedAt = bEntry.FetchedAt
 		}
-
-		blockTransactions := scTypes.BlockTransactions(&bEntry.Block)
-		transactions = append(transactions, blockTransactions...)
 	}
 
 	return scTypes.NewProposalData(
 		proposalCandidate.Id,
-		transactions,
+		proposalCandidate.DataProofs,
 		currentProvedStateRoot,
 		proposalCandidate.LatestMainBlockHash,
 		firstBlockFetchedAt,

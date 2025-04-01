@@ -1,23 +1,15 @@
-import { useStyletron } from "baseui";
 import { Meta } from "../../features/shared";
+import { InternalPageContainer } from "../../features/shared/components/InternalPageContainer";
 import { Layout } from "../../features/shared/components/Layout";
 import { Transaction } from "../../features/transaction";
 
 const TransactionPage = () => {
-  const [css] = useStyletron();
   return (
     <Layout>
-      <div
-        className={css({
-          display: "flex",
-          flexDirection: "column",
-          maxWidth: "100%",
-          width: "100%",
-        })}
-      >
+      <InternalPageContainer>
         <Meta title="Transaction" description="zkSharding for Ethereum" />
         <Transaction />
-      </div>
+      </InternalPageContainer>
     </Layout>
   );
 };

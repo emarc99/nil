@@ -354,7 +354,7 @@ func (s *SuiteTxnPool) checkTransactionsOrder(vals ...int) {
 
 	txns := s.getTransactions()
 
-	s.Require().Equal(len(vals), len(txns))
+	s.Require().Len(txns, len(vals))
 
 	correct := true
 	for i, txn := range txns {

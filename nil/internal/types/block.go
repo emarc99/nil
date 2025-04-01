@@ -142,7 +142,7 @@ func (b *RawBlockWithExtractedData) DecodeSSZ() (*BlockWithExtractedData, error)
 }
 
 func (b *BlockWithExtractedData) EncodeSSZ() (*RawBlockWithExtractedData, error) {
-	block, err := b.Block.MarshalSSZ()
+	block, err := b.MarshalSSZ()
 	if err != nil {
 		return nil, err
 	}

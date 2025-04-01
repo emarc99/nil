@@ -22,10 +22,10 @@ type SyncCommittee struct {
 	srv.Service
 }
 
-func New(cfg *Config, database db.DB, ethClient rollupcontract.EthClient) (*SyncCommittee, error) {
+func New(ctx context.Context, cfg *Config, database db.DB) (*SyncCommittee, error) {
 	logger := logging.NewLogger("sync_committee")
 
-	if err := telemetry.Init(context.Background(), cfg.Telemetry); err != nil {
+	if err := telemetry.Init(ctx, cfg.Telemetry); err != nil {
 		logger.Error().Err(err).Msg("failed to initialize telemetry")
 		return nil, err
 	}
@@ -46,24 +46,31 @@ func New(cfg *Config, database db.DB, ethClient rollupcontract.EthClient) (*Sync
 	//  and pass it here in https://github.com/NilFoundation/nil/pull/419
 	stateResetter := reset.NewStateResetter(logger, blockStorage)
 
+	rollupContractWrapper, err := rollupcontract.NewWrapper(
+		ctx,
+		cfg.ContractWrapperConfig,
+		logger,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error initializing rollup contract wrapper: %w", err)
+	}
+
 	agg := NewAggregator(
 		client,
 		blockStorage,
 		taskStorage,
 		stateResetter,
+		rollupContractWrapper,
 		clock,
 		logger,
 		metricsHandler,
 		cfg.AggregatorConfig,
 	)
 
-	ctx := context.Background()
-
 	prop, err := NewProposer(
-		ctx,
 		cfg.ProposerParams,
 		blockStorage,
-		ethClient,
+		rollupContractWrapper,
 		client,
 		metricsHandler,
 		logger,

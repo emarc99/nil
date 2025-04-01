@@ -34,6 +34,20 @@ func newErrInvalidSignature(inner error) invalidSignatureError {
 	return invalidSignatureError{inner: inner}
 }
 
+type eventType int
+
+const (
+	/* Block inserted by validator. */
+	commitType eventType = iota
+	/* Block inserted by syncer. */
+	replayType
+)
+
+type event struct {
+	evType      eventType
+	blockNumber types.BlockNumber
+}
+
 type Validator struct {
 	params             *Params
 	mainShardValidator *Validator // +checklocksignore: thread safe
@@ -48,8 +62,8 @@ type Validator struct {
 	lastBlockHash common.Hash  // +checklocks:mutex
 
 	subsMutex sync.Mutex
-	subsId    uint64                            // +checklocks:subsMutex
-	subs      map[uint64]chan types.BlockNumber // +checklocks:subsMutex
+	subsId    uint64                 // +checklocks:subsMutex
+	subs      map[uint64]chan *event // +checklocks:subsMutex
 
 	logger logging.Logger
 }
@@ -64,7 +78,7 @@ func NewValidator(
 		pool:               pool,
 		networkManager:     nm,
 		blockVerifier:      signer.NewBlockVerifier(params.ShardId, txFabric),
-		subs:               make(map[uint64]chan types.BlockNumber),
+		subs:               make(map[uint64]chan *event),
 		logger: logging.NewLogger("validator").With().
 			Stringer(logging.FieldShardId, params.ShardId).
 			Logger(),
@@ -238,7 +252,7 @@ func (s *Validator) insertProposalUnlocked(
 		return fmt.Errorf("failed to generate block: %w", err)
 	}
 
-	s.onBlockCommitUnlocked(ctx, res, p)
+	s.onBlockCommitUnlocked(ctx, res, p, commitType)
 
 	return PublishBlock(ctx, s.networkManager, s.params.ShardId, &types.BlockWithExtractedData{
 		Block:           res.Block,
@@ -253,7 +267,7 @@ func (s *Validator) insertProposalUnlocked(
 
 // +checklocks:s.mutex
 func (s *Validator) onBlockCommitUnlocked(
-	ctx context.Context, res *execution.BlockGenerationResult, proposal *execution.Proposal,
+	ctx context.Context, res *execution.BlockGenerationResult, proposal *execution.Proposal, evType eventType,
 ) {
 	s.setLastBlockUnlocked(res.Block, res.BlockHash)
 
@@ -264,7 +278,7 @@ func (s *Validator) onBlockCommitUnlocked(
 		}
 	}
 
-	s.notify(res.Block.Id)
+	s.notify(&event{evType, res.Block.Id})
 }
 
 func (s *Validator) logBlockDiffError(expected, got *types.Block, expHash, gotHash common.Hash) error {
@@ -321,9 +335,9 @@ func (s *Validator) validateRepliedBlock(
 // +checklocksread:s.mutex
 func (s *Validator) validateBlockForProposalUnlocked(ctx context.Context, block *types.BlockWithExtractedData) error {
 	proposal := &execution.Proposal{
-		PrevBlockId:   block.Block.Id - 1,
-		PrevBlockHash: block.Block.PrevBlock,
-		MainShardHash: block.Block.MainShardHash,
+		PrevBlockId:   block.Id - 1,
+		PrevBlockHash: block.PrevBlock,
+		MainShardHash: block.MainShardHash,
 		ShardHashes:   block.ChildBlocks,
 	}
 	return s.validateProposalUnlocked(ctx, proposal)
@@ -381,9 +395,9 @@ func (s *Validator) ReplayBlock(ctx context.Context, block *types.BlockWithExtra
 
 // +checklocks:s.mutex
 func (s *Validator) replayBlockUnlocked(ctx context.Context, block *types.BlockWithExtractedData) error {
-	blockHash := block.Block.Hash(s.params.ShardId)
+	blockHash := block.Hash(s.params.ShardId)
 	s.logger.Trace().
-		Stringer(logging.FieldBlockNumber, block.Block.Id).
+		Stringer(logging.FieldBlockNumber, block.Id).
 		Stringer(logging.FieldBlockHash, blockHash).
 		Msg("Replaying block")
 
@@ -395,9 +409,9 @@ func (s *Validator) replayBlockUnlocked(ctx context.Context, block *types.BlockW
 	}
 
 	proposal := &execution.Proposal{
-		PrevBlockId:   block.Block.Id - 1,
-		PrevBlockHash: block.Block.PrevBlock,
-		MainShardHash: block.Block.MainShardHash,
+		PrevBlockId:   block.Id - 1,
+		PrevBlockHash: block.PrevBlock,
+		MainShardHash: block.MainShardHash,
 		ShardHashes:   block.ChildBlocks,
 	}
 	proposal.InternalTxns, proposal.ExternalTxns = execution.SplitInTransactions(block.InTransactions)
@@ -466,7 +480,7 @@ func (s *Validator) replayBlockUnlocked(ctx context.Context, block *types.BlockW
 		return fmt.Errorf("failed to finalize block: %w", err)
 	}
 
-	s.onBlockCommitUnlocked(ctx, resBlock, proposal)
+	s.onBlockCommitUnlocked(ctx, resBlock, proposal, replayType)
 
 	return nil
 }
@@ -477,11 +491,11 @@ func (s *Validator) setLastBlockUnlocked(block *types.Block, hash common.Hash) {
 	s.lastBlockHash = hash
 }
 
-func (s *Validator) Subscribe() (uint64, <-chan types.BlockNumber) {
+func (s *Validator) Subscribe() (uint64, <-chan *event) {
 	s.subsMutex.Lock()
 	defer s.subsMutex.Unlock()
 
-	ch := make(chan types.BlockNumber, 1)
+	ch := make(chan *event, 1)
 	id := s.subsId
 	s.subs[id] = ch
 	s.subsId++
@@ -496,13 +510,13 @@ func (s *Validator) Unsubscribe(id uint64) {
 	delete(s.subs, id)
 }
 
-func (s *Validator) notify(blockId types.BlockNumber) {
+func (s *Validator) notify(ev *event) {
 	s.subsMutex.Lock()
 	defer s.subsMutex.Unlock()
 
 	for _, ch := range s.subs {
 		select {
-		case ch <- blockId:
+		case ch <- ev:
 		default:
 		}
 	}

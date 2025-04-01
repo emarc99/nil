@@ -53,7 +53,7 @@ func (s *BlockTasksIntegrationTestSuite) SetupSuite() {
 
 	s.scheduler = scheduler.New(
 		s.taskStorage,
-		newTaskStateChangeHandler(s.blockStorage, &noopStateResetLauncher{}, logger),
+		newTaskStateChangeHandler(s.blockStorage, &StateResetLauncherMock{}, logger),
 		metricsHandler,
 		logger,
 	)
@@ -160,10 +160,4 @@ func newTestSuccessProviderResult(taskToExecute *types.Task, executorId types.Ta
 		types.TaskOutputArtifacts{},
 		types.TaskResultData{},
 	)
-}
-
-type noopStateResetLauncher struct{}
-
-func (l *noopStateResetLauncher) LaunchPartialResetWithSuspension(_ context.Context, _ types.BatchId) error {
-	return nil
 }

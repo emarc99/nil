@@ -200,7 +200,7 @@ func (s *SuiteCliService) TestContract() {
 	balanceAfter, err := s.cli.GetBalance(addr)
 	s.Require().NoError(err)
 
-	s.EqualValues(uint64(100), balanceAfter.Uint64()-balanceBefore.Uint64())
+	s.Equal(uint64(100), balanceAfter.Uint64()-balanceBefore.Uint64())
 }
 
 func (s *SuiteCliService) testNewSmartAccountOnShard(shardId types.ShardId) {

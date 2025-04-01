@@ -245,7 +245,7 @@ func (h *handler) handleCallMsg(ctx context.Context, msg *Message, stream *jsoni
 			msg.Result = resp.Result
 		}
 
-		h.log(h.requestLoggingLevel(), msg, "Served.", requestDuration)
+		h.log(h.requestLoggingLevel(), msg, "Served: "+msg.Method, requestDuration)
 
 		return resp
 	case msg.hasValidID():

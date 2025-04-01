@@ -105,7 +105,7 @@ func (s *FaucetRpc) TestSendToken() {
 		expectedTokens[types.TokenId(addr.Bytes())] = amount
 		s.topUpAndWait(addr, wallet, amount)
 	}
-	tokens, err := s.RpcSuite.Client.GetTokens(s.Context, wallet, "latest")
+	tokens, err := s.Client.GetTokens(s.Context, wallet, "latest")
 	s.Require().NoError(err)
 	s.Require().Equal(expectedTokens, tokens)
 }

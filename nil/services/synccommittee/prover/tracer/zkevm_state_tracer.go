@@ -120,7 +120,7 @@ func (zst *ZKEVMStateTracer) TraceOp(
 func (zst *ZKEVMStateTracer) SetLastStateStorage(key, value types.Uint256) error {
 	stateNum := len(zst.res)
 	if stateNum == 0 {
-		return errors.New("Attempt to add storage operation without initializing zkEVM state")
+		return errors.New("attempt to add storage operation without initializing zkEVM state")
 	}
 
 	lastRes := &zst.res[stateNum-1]

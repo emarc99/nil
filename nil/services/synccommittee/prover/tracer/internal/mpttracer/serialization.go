@@ -162,7 +162,6 @@ func smartContractFromProto(pbSmartContract *pb.SmartContract) *types.SmartContr
 	}
 	return &types.SmartContract{
 		Address:          types.HexToAddress(pbSmartContract.Address),
-		Initialised:      pbSmartContract.Initialized,
 		Balance:          types.NewValue(balance.Int()),
 		TokenRoot:        common.HexToHash(pbSmartContract.TokenRoot),
 		StorageRoot:      common.HexToHash(pbSmartContract.StorageRoot),
@@ -186,7 +185,6 @@ func smartContractToProto(smartContract *types.SmartContract) *pb.SmartContract 
 	}
 	return &pb.SmartContract{
 		Address:          smartContract.Address.Hex(),
-		Initialized:      smartContract.Initialised,
 		Balance:          pbBalance,
 		TokenRoot:        smartContract.TokenRoot.Hex(),
 		StorageRoot:      smartContract.StorageRoot.Hex(),

@@ -108,7 +108,7 @@ func (s *SuiteFaucet) TestDeployContractViaFaucet() {
 	balance, err := s.DefaultClient.GetBalance(s.Context, smartAccountAddr, "latest")
 	s.Require().NoError(err)
 	s.Require().Less(balance.Uint64(), value.Uint64())
-	s.Require().Positive(balance.Uint64())
+	s.Require().NotZero(balance.Uint64())
 	logging.GlobalLogger.Info().Msgf("Spent %s nil", value.Sub(balance))
 }
 

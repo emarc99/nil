@@ -19,6 +19,7 @@ type LocalShardApi struct {
 	enableDevApi bool
 
 	nodeApi NodeApi
+	logger  logging.Logger
 }
 
 var (
@@ -34,6 +35,7 @@ func NewLocalShardApi(shardId types.ShardId, db db.ReadOnlyDB, txnpool txnpool.P
 		ShardId:      shardId,
 		txnpool:      txnpool,
 		enableDevApi: enableDevApi,
+		logger:       logging.NewLogger("local_api"),
 	}
 }
 

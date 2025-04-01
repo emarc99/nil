@@ -81,6 +81,8 @@ const (
 	Debug_getContract                    = "debug_getContract"
 	Web3_clientVersion                   = "web3_clientVersion"
 	Dev_doPanicOnShard                   = "dev_doPanicOnShard"
+	Txpool_getTxpoolStatus               = "txpool_getTxpoolStatus"
+	Txpool_getTxpoolContent              = "txpool_getTxpoolContent"
 )
 
 const (
@@ -192,7 +194,7 @@ func RunContractBatch(ctx context.Context, client *Client, smartAccount types.Ad
 	// get hash of the latest message
 	rawTxn, ok := resp[len(resp)-1].(json.RawMessage)
 	if !ok {
-		return common.EmptyHash, errors.New("Result is not bytes")
+		return common.EmptyHash, errors.New("result is not bytes")
 	}
 
 	var txHash common.Hash
@@ -968,4 +970,12 @@ func simpleCallUint64[ReturnType ~uint64](
 		return 0, err
 	}
 	return ReturnType(result), err
+}
+
+func (c *Client) GetTxpoolStatus(ctx context.Context, shardId types.ShardId) (jsonrpc.TxPoolStatus, error) {
+	return simpleCall[jsonrpc.TxPoolStatus](ctx, c, Txpool_getTxpoolStatus, shardId)
+}
+
+func (c *Client) GetTxpoolContent(ctx context.Context, shardId types.ShardId) (jsonrpc.TxPoolContent, error) {
+	return simpleCall[jsonrpc.TxPoolContent](ctx, c, Txpool_getTxpoolContent, shardId)
 }

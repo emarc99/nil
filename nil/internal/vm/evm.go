@@ -463,7 +463,6 @@ func (evm *EVM) create(
 	// The contract is a scoped environment for this execution context only.
 	contract := NewContract(caller, AccountRef(address), value, gas, nil)
 	contract.SetCallCode(address, codeAndHash.Hash(), codeAndHash)
-	contract.IsDeployment = true
 
 	ret, err := evm.interpreter.Run(contract, nil, false)
 

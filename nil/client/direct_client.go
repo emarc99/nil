@@ -19,11 +19,12 @@ import (
 
 // DirectClient is a client that interacts with the end api directly, without using the rpc server.
 type DirectClient struct {
-	ethApi   jsonrpc.EthAPI
-	debugApi jsonrpc.DebugAPI
-	dbApi    jsonrpc.DbAPI
-	web3Api  jsonrpc.Web3API
-	devApi   jsonrpc.DevAPI
+	ethApi    jsonrpc.EthAPI
+	debugApi  jsonrpc.DebugAPI
+	dbApi     jsonrpc.DbAPI
+	web3Api   jsonrpc.Web3API
+	devApi    jsonrpc.DevAPI
+	txPoolApi jsonrpc.TxPoolAPI
 }
 
 var _ Client = (*DirectClient)(nil)
@@ -39,13 +40,15 @@ func NewEthClient(
 	dbApi := jsonrpc.NewDbAPI(db, logger)
 	web3Api := jsonrpc.NewWeb3API(localApi)
 	devApi := jsonrpc.NewDevAPI(localApi)
+	txPoolApi := jsonrpc.NewTxPoolAPI(localApi, logger)
 
 	return &DirectClient{
-		ethApi:   ethApi,
-		debugApi: debugApi,
-		dbApi:    dbApi,
-		web3Api:  web3Api,
-		devApi:   devApi,
+		ethApi:    ethApi,
+		debugApi:  debugApi,
+		dbApi:     dbApi,
+		web3Api:   web3Api,
+		devApi:    devApi,
+		txPoolApi: txPoolApi,
 	}, nil
 }
 
@@ -394,4 +397,12 @@ func (c *DirectClient) ClientVersion(ctx context.Context) (string, error) {
 
 func (c *DirectClient) DoPanicOnShard(ctx context.Context, shardId types.ShardId) (uint64, error) {
 	return c.devApi.DoPanicOnShard(ctx, shardId)
+}
+
+func (c *DirectClient) GetTxpoolStatus(ctx context.Context, shardId types.ShardId) (jsonrpc.TxPoolStatus, error) {
+	return c.txPoolApi.GetTxpoolStatus(ctx, shardId)
+}
+
+func (c *DirectClient) GetTxpoolContent(ctx context.Context, shardId types.ShardId) (jsonrpc.TxPoolContent, error) {
+	return c.txPoolApi.GetTxpoolContent(ctx, shardId)
 }

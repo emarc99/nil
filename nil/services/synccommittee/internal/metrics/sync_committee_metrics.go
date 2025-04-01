@@ -24,9 +24,9 @@ type SyncCommitteeMetricsHandler struct {
 	totalBatchesProved telemetry.Counter
 
 	// ProposerMetrics
-	totalL1TxSent       telemetry.Counter
-	blockTotalTimeMs    telemetry.Histogram
-	txPerSingleProposal telemetry.Histogram
+	totalL1TxSent          telemetry.Counter
+	blockTotalTimeMs       telemetry.Histogram
+	blobsPerSingleProposal telemetry.Histogram
 }
 
 func NewSyncCommitteeMetrics() (*SyncCommitteeMetricsHandler, error) {
@@ -84,7 +84,7 @@ func (h *SyncCommitteeMetricsHandler) initProposerMetrics(meter telemetry.Meter)
 		return err
 	}
 
-	if h.txPerSingleProposal, err = meter.Int64Histogram(namespace + "tx_per_proposal"); err != nil {
+	if h.blobsPerSingleProposal, err = meter.Int64Histogram(namespace + "blobs_per_proposal"); err != nil {
 		return err
 	}
 	return nil
@@ -122,6 +122,6 @@ func (h *SyncCommitteeMetricsHandler) RecordProposerTxSent(ctx context.Context, 
 	totalTimeMs := time.Since(proposalData.FirstBlockFetchedAt).Milliseconds()
 	h.blockTotalTimeMs.Record(ctx, totalTimeMs, h.attributes)
 
-	txCount := int64(len(proposalData.Transactions))
-	h.txPerSingleProposal.Record(ctx, txCount, h.attributes)
+	blobsCount := int64(len(proposalData.DataProofs))
+	h.blobsPerSingleProposal.Record(ctx, blobsCount, h.attributes)
 }

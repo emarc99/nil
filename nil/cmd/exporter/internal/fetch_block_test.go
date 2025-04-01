@@ -28,7 +28,7 @@ func (s *SuiteFetchBlock) TestFetchBlock() {
 	s.Require().NoError(err)
 	s.Require().NotNil(fetchedBlock)
 
-	blocks, err := s.exporter.FetchBlocks(s.context, types.MainShardId, fetchedBlock.Block.Id, fetchedBlock.Block.Id+10)
+	blocks, err := s.exporter.FetchBlocks(s.context, types.MainShardId, fetchedBlock.Id, fetchedBlock.Id+10)
 	s.Require().NoError(err)
 	s.Require().NotEmpty(blocks)
 	s.Require().Equal(fetchedBlock, blocks[0])

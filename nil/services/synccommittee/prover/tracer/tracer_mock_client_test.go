@@ -500,8 +500,8 @@ func (s *TracerMockClientTestSuite) TestKeccakOpCodeTracing() {
 
 	// check keccak tracer
 	s.Require().Len(traceData.KeccakTraces, 2)
-	s.EqualValues(dataToCopy, traceData.KeccakTraces[0].buf)
+	s.Equal(dataToCopy, traceData.KeccakTraces[0].buf)
 	s.EqualValues(expectedHash, traceData.KeccakTraces[0].hash)
-	s.EqualValues(dataToCopy, traceData.KeccakTraces[1].buf)
+	s.Equal(dataToCopy, traceData.KeccakTraces[1].buf)
 	s.EqualValues(expectedHash, traceData.KeccakTraces[1].hash)
 }

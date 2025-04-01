@@ -31,10 +31,11 @@ func traceStorageOperation(t *testing.T, tracer *StorageOpTracer, opCode vm.OpCo
 	traced, err := tracer.TraceOp(opCode, pc, context)
 	require.NoError(t, err)
 
-	if opCode == vm.SSTORE {
+	switch opCode { //nolint: exhaustive
+	case vm.SSTORE:
 		// mimic `opSstore`
 		stack = stack[:0]
-	} else if opCode == vm.SLOAD {
+	case vm.SLOAD:
 		// mimic `opSload`
 		stack = []uint256.Int{val}
 	}

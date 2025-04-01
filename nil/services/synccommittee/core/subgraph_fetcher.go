@@ -56,10 +56,6 @@ func (f *subgraphFetcher) fetchShardChainSegments(
 			return nil, fmt.Errorf("error fetching shard chain segment, childId=%s: %w", childId, err)
 		}
 		if len(segment) == 0 {
-			f.logger.Warn().
-				Stringer(logging.FieldShardId, childId.ShardId).
-				Stringer(logging.FieldBlockHash, childId.Hash).
-				Msg("received empty chain segment, skipping")
 			continue
 		}
 
@@ -78,8 +74,13 @@ func (f *subgraphFetcher) fetchShardChainSegment(
 	if err != nil {
 		return nil, err
 	}
+	latestRef := types.BlockToRef(latestSubBlock)
+	if latestFetched.Equals(&latestRef) {
+		f.logger.Debug().Msgf("No new blocks to fetch in subgraph, latestFetched=%s", latestFetched)
+		return types.EmptyChainSegment, nil
+	}
 
-	if err := latestFetched.ValidateDescendant(types.BlockToRef(latestSubBlock)); err != nil {
+	if err := latestFetched.ValidateDescendant(latestRef); err != nil {
 		return nil, fmt.Errorf("cannot fetch chain segment: %w", err)
 	}
 

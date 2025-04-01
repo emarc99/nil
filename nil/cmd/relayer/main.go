@@ -67,35 +67,78 @@ func execute() error {
 
 func addRunCommandFlags(runCmd *cobra.Command, cfg *Config) {
 	runCmd.Flags().StringVar(&cfg.DbPath, "db-path", "relayer.db", "path to database")
-	runCmd.Flags().StringVar(&cfg.L1ClientConfig.Endpoint, "l1-endpoint", "", "URL for ETH L1 client")
-	runCmd.Flags().DurationVar(&cfg.L1ClientConfig.Timeout,
-		"l1-timeout", time.Second, "Max timeout for ETH client to timeout")
 
+	runCmd.Flags().StringVar(&cfg.L1ClientConfig.Endpoint,
+		"l1-endpoint", "", "URL for ETH L1 client",
+	)
 	runCmd.Flags().StringVar(
-		&cfg.RelayerConfig.EventListenerConfig.BridgeMessengerContractAddress,
+		&cfg.EventListenerConfig.BridgeMessengerContractAddress,
 		"l1-contract-addr",
 		"",
 		"Address of L1BridgeMessenger contract to fetch events from",
 	)
-	runCmd.Flags().StringVar(
-		&cfg.RelayerConfig.EventListenerConfig.BridgeMessengerContractAddress,
-		"l2-contract-addr",
-		"",
-		"Address of L2BridgeMessenger contract to forward events to",
+	runCmd.Flags().DurationVar(&cfg.L1ClientConfig.Timeout,
+		"l1-timeout", time.Second, "Max timeout for ETH client to timeout",
 	)
-
 	runCmd.Flags().IntVar(
-		&cfg.RelayerConfig.EventListenerConfig.BatchSize,
+		&cfg.EventListenerConfig.BatchSize,
 		"l1-fetcher-batch-size",
-		cfg.RelayerConfig.EventListenerConfig.BatchSize,
+		cfg.EventListenerConfig.BatchSize,
 		"Block range len used in event listener to fetch historical data",
 	)
 
 	runCmd.Flags().DurationVar(
-		&cfg.RelayerConfig.EventListenerConfig.PollInterval,
+		&cfg.EventListenerConfig.PollInterval,
 		"l1-fetcher-poll-interval",
-		cfg.RelayerConfig.EventListenerConfig.PollInterval,
+		cfg.EventListenerConfig.PollInterval,
 		"Pause which l1 fetcher takes between fetching historical data batches",
+	)
+
+	runCmd.Flags().StringVar(
+		&cfg.L2ContractConfig.Endpoint, "l2-endpoint", "", "URL for nil L2 client",
+	)
+	runCmd.Flags().StringVar(
+		&cfg.L2ContractConfig.ContractAddress,
+		"l2-contract-addr",
+		cfg.L2ContractConfig.ContractAddress,
+		"Address of L2BridgeMessenger contract to forward events to",
+	)
+	runCmd.Flags().StringVar(
+		&cfg.L2ContractConfig.SmartAccountAddress,
+		"l2-smart-account-addr",
+		cfg.L2ContractConfig.SmartAccountAddress,
+		"Smart account address for relayer to operate on L2",
+	)
+	runCmd.Flags().StringVar(
+		&cfg.L2ContractConfig.ContractABIPath,
+		"l2-contract-abi-path",
+		cfg.L2ContractConfig.ContractABIPath,
+		"ABI of nil L2BridgeMessenger contract",
+	)
+	runCmd.Flags().DurationVar(
+		&cfg.TransactionSenderConfig.DbPollInterval,
+		"l2-transaction-sender-db-poll-interval",
+		cfg.TransactionSenderConfig.DbPollInterval,
+		"Poll interval for L2 transaction sender",
+	)
+
+	// L2 debug mode flags
+	runCmd.Flags().BoolVar(&cfg.L2ContractConfig.DebugMode,
+		"l2-debug-mode", false, "Enable debug mode for L2 transaction sender",
+	)
+
+	runCmd.Flags().StringVar(
+		&cfg.L2ContractConfig.SmartAccountSalt,
+		"l2-smart-account-salt",
+		"",
+		"Salt for L2 smart account (debug-only)",
+	)
+
+	runCmd.Flags().StringVar(
+		&cfg.L2ContractConfig.FaucetAddress,
+		"l2-faucet-address",
+		"",
+		"Faucet address for L2 transaction sender (debug-only)",
 	)
 }
 

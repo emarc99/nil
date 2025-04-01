@@ -110,4 +110,4 @@ This project is currently under active development. Not all features are fully i
 
 ## License
 
-[MIT](./LICENSE)
+[MIT](./LICENCE)

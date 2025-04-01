@@ -51,7 +51,7 @@ func (m *transactionWithHash) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
 		*types.Transaction
 		Hash common.Hash `json:"hash"`
-	}{&m.Transaction, m.Transaction.Hash()})
+	}{&m.Transaction, m.Hash()})
 }
 
 func (s *Service) debugBlockToJson(shardId types.ShardId, block *types.BlockWithExtractedData) ([]byte, error) {
@@ -84,7 +84,7 @@ func (s *Service) debugBlockToJson(shardId types.ShardId, block *types.BlockWith
 		toWithHashTransactions(block.OutTransactions),
 		block.Receipts,
 		block.Errors,
-		block.Block.Hash(shardId),
+		block.Hash(shardId),
 		shardId,
 		block.BaseFee,
 		block.GasUsed,

@@ -1,6 +1,7 @@
 package core
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -10,14 +11,16 @@ import (
 	"github.com/NilFoundation/nil/nil/common/concurrent"
 	"github.com/NilFoundation/nil/nil/common/logging"
 	coreTypes "github.com/NilFoundation/nil/nil/internal/types"
-	"github.com/NilFoundation/nil/nil/services/synccommittee/core/batches"
 	"github.com/NilFoundation/nil/nil/services/synccommittee/core/batches/blob"
+	"github.com/NilFoundation/nil/nil/services/synccommittee/core/batches/encode"
 	v1 "github.com/NilFoundation/nil/nil/services/synccommittee/core/batches/encode/v1"
 	"github.com/NilFoundation/nil/nil/services/synccommittee/core/reset"
 	"github.com/NilFoundation/nil/nil/services/synccommittee/internal/metrics"
+	"github.com/NilFoundation/nil/nil/services/synccommittee/internal/rollupcontract"
 	"github.com/NilFoundation/nil/nil/services/synccommittee/internal/srv"
 	"github.com/NilFoundation/nil/nil/services/synccommittee/internal/storage"
 	"github.com/NilFoundation/nil/nil/services/synccommittee/internal/types"
+	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/jonboulle/clockwork"
 )
 
@@ -41,11 +44,13 @@ type AggregatorBlockStorage interface {
 
 type AggregatorConfig struct {
 	RpcPollingInterval time.Duration
+	MaxBlobsInTx       uint
 }
 
 func NewAggregatorConfig(rpcPollingInterval time.Duration) AggregatorConfig {
 	return AggregatorConfig{
 		RpcPollingInterval: rpcPollingInterval,
+		MaxBlobsInTx:       6,
 	}
 }
 
@@ -58,10 +63,13 @@ type aggregator struct {
 	blockStorage    AggregatorBlockStorage
 	taskStorage     AggregatorTaskStorage
 	subgraphFetcher *subgraphFetcher
-	batchCommitter  batches.BatchCommitter
+	batchEncoder    encode.BatchEncoder
+	blobBuilder     blob.Builder
+	rollupContract  rollupcontract.Wrapper
 	resetter        *reset.StateResetter
 	clock           clockwork.Clock
 	metrics         AggregatorMetrics
+	config          AggregatorConfig
 	workerAction    *concurrent.Suspendable
 	logger          logging.Logger
 }
@@ -71,6 +79,7 @@ func NewAggregator(
 	blockStorage AggregatorBlockStorage,
 	taskStorage AggregatorTaskStorage,
 	resetter *reset.StateResetter,
+	rollupContractWrapper rollupcontract.Wrapper,
 	clock clockwork.Clock,
 	logger logging.Logger,
 	metrics AggregatorMetrics,
@@ -81,16 +90,13 @@ func NewAggregator(
 		blockStorage:    blockStorage,
 		taskStorage:     taskStorage,
 		subgraphFetcher: newSubgraphFetcher(rpcClient, logger),
-		batchCommitter: batches.NewBatchCommitter(
-			v1.NewEncoder(logger),
-			blob.NewBuilder(),
-			nil, // TODO
-			logger,
-			batches.DefaultCommitOptions(),
-		),
-		resetter: resetter,
-		clock:    clock,
-		metrics:  metrics,
+		batchEncoder:    v1.NewEncoder(logger),
+		blobBuilder:     blob.NewBuilder(),
+		rollupContract:  rollupContractWrapper,
+		resetter:        resetter,
+		clock:           clock,
+		metrics:         metrics,
+		config:          config,
 	}
 
 	agg.workerAction = concurrent.NewSuspendable(agg.runIteration, config.RpcPollingInterval)
@@ -103,14 +109,14 @@ func (agg *aggregator) Name() string {
 }
 
 func (agg *aggregator) Run(ctx context.Context, started chan<- struct{}) error {
-	agg.logger.Info().Msg("starting blocks fetching")
+	agg.logger.Info().Msg("Starting block fetching")
 
 	err := agg.workerAction.Run(ctx, started)
 
 	if err == nil || errors.Is(err, context.Canceled) {
-		agg.logger.Info().Msg("blocks fetching stopped")
+		agg.logger.Info().Msg("Block fetching stopped")
 	} else {
-		agg.logger.Error().Err(err).Msg("error running aggregator, stopped")
+		agg.logger.Error().Err(err).Msg("Error running aggregator, stopped")
 	}
 
 	return err
@@ -122,9 +128,9 @@ func (agg *aggregator) Pause(ctx context.Context) error {
 		return err
 	}
 	if paused {
-		agg.logger.Info().Msg("blocks fetching paused")
+		agg.logger.Info().Msg("Block fetching paused")
 	} else {
-		agg.logger.Warn().Msg("blocks fetching already paused")
+		agg.logger.Warn().Msg("Block fetching already paused")
 	}
 	return nil
 }
@@ -135,9 +141,9 @@ func (agg *aggregator) Resume(ctx context.Context) error {
 		return err
 	}
 	if resumed {
-		agg.logger.Info().Msg("blocks fetching resumed")
+		agg.logger.Info().Msg("Block fetching resumed")
 	} else {
-		agg.logger.Warn().Msg("blocks fetching already running")
+		agg.logger.Warn().Msg("Block fetching already running")
 	}
 	return nil
 }
@@ -161,31 +167,27 @@ func (agg *aggregator) handleProcessingErr(ctx context.Context, err error) error
 	case err == nil:
 		return nil
 
-	case errors.Is(err, types.ErrBatchNotReady):
-		agg.logger.Warn().Err(err).Msg("received unready block batch, skipping")
-		return nil
-
 	case errors.Is(err, types.ErrBlockMismatch):
-		agg.logger.Warn().Err(err).Msg("block mismatch detected, resetting state")
+		agg.logger.Warn().Err(err).Msg("Block mismatch detected, resetting state")
 		if err := agg.resetter.ResetProgressNotProved(ctx); err != nil {
 			return fmt.Errorf("error resetting state: %w", err)
 		}
 		return nil
 
 	case errors.Is(err, storage.ErrStateRootNotInitialized):
-		agg.logger.Warn().Err(err).Msg("state root not initialized, skipping")
+		agg.logger.Warn().Err(err).Msg("State root not initialized, skipping")
 		return nil
 
 	case errors.Is(err, storage.ErrCapacityLimitReached):
-		agg.logger.Info().Err(err).Msg("storage capacity limit reached, skipping")
+		agg.logger.Info().Err(err).Msg("Storage capacity limit reached, skipping")
 		return nil
 
 	case errors.Is(err, context.Canceled):
-		agg.logger.Info().Err(err).Msg("block processing cancelled")
+		agg.logger.Info().Err(err).Msg("Block processing cancelled")
 		return err
 
 	default:
-		agg.logger.Error().Err(err).Msg("error processing blocks")
+		agg.logger.Error().Err(err).Msg("Error processing blocks")
 		return err
 	}
 }
@@ -220,7 +222,7 @@ func (agg *aggregator) processBlockRange(ctx context.Context) error {
 		agg.logger.Debug().
 			Stringer(logging.FieldShardId, coreTypes.MainShardId).
 			Stringer(logging.FieldBlockNumber, latestBlockRef.Number).
-			Msg("no new blocks to fetch")
+			Msg("No new blocks to fetch")
 		return nil
 	}
 
@@ -361,13 +363,18 @@ func (agg *aggregator) handleBlockBatch(ctx context.Context, batch *types.BlockB
 		return err
 	}
 
+	sidecar, dataProofs, err := agg.prepareForBatchCommit(ctx, batch)
+	if err != nil {
+		return err
+	}
+	batch.SetDataProofs(dataProofs)
+
 	if err := agg.blockStorage.SetBlockBatch(ctx, batch); err != nil {
 		return fmt.Errorf("error storing block batch, latestMainHash=%s: %w", batch.LatestMainBlock().Hash, err)
 	}
 
-	prunedBatch := types.NewPrunedBatch(batch)
-	if err := agg.batchCommitter.Commit(ctx, prunedBatch); err != nil {
-		return err
+	if err := agg.rollupContract.CommitBatch(ctx, sidecar, batch.Id.String()); err != nil {
+		return fmt.Errorf("error committing batch, latestMainHash=%s: %w", batch.LatestMainBlock().Hash, err)
 	}
 
 	if err := agg.createProofTasks(ctx, batch); err != nil {
@@ -392,7 +399,24 @@ func (agg *aggregator) createProofTasks(ctx context.Context, batch *types.BlockB
 
 	agg.logger.Debug().
 		Stringer(logging.FieldBatchId, batch.Id).
-		Msgf("created proof task, latestMainHash=%s", batch.LatestMainBlock().Hash)
+		Msgf("Created proof task, latestMainHash=%s", batch.LatestMainBlock().Hash)
 
 	return nil
+}
+
+func (agg *aggregator) prepareForBatchCommit(
+	ctx context.Context, batch *types.BlockBatch,
+) (*ethtypes.BlobTxSidecar, types.DataProofs, error) {
+	var binTransactions bytes.Buffer
+	if err := agg.batchEncoder.Encode(types.NewPrunedBatch(batch), &binTransactions); err != nil {
+		return nil, nil, err
+	}
+	agg.logger.Debug().Int("compressed_batch_len", binTransactions.Len()).Msg("encoded transaction")
+
+	blobs, err := agg.blobBuilder.MakeBlobs(&binTransactions, agg.config.MaxBlobsInTx)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return agg.rollupContract.PrepareBlobs(ctx, blobs)
 }

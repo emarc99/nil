@@ -253,7 +253,6 @@ func (s *LogServer) processLogRecord(ctx context.Context, logRecord *v12.LogReco
 func (s *LogServer) Export(
 	ctx context.Context, req *logs.ExportLogsServiceRequest,
 ) (*logs.ExportLogsServiceResponse, error) {
-	s.logger.Info().Int("log_records", len(req.ResourceLogs)).Msg("Received log records")
 	for _, resourceLog := range req.ResourceLogs {
 		if err := s.processResourceLog(ctx, resourceLog); err != nil {
 			return nil, err

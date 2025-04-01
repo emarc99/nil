@@ -54,9 +54,11 @@ func main() {
 		cfg.Config,
 		database,
 		nil,
-		concurrent.WithSource(func(ctx context.Context) error {
-			return database.LogGC(ctx, cfg.DB.DiscardRatio, cfg.DB.GcFrequency)
-		}))
+		concurrent.MakeTask(
+			"badger GC",
+			func(ctx context.Context) error {
+				return database.LogGC(ctx, cfg.DB.DiscardRatio, cfg.DB.GcFrequency)
+			}))
 
 	database.Close()
 	os.Exit(exitCode)
@@ -128,7 +130,7 @@ func parseArgs() *nildconfig.Config {
 		&cfg.AdminSocketPath,
 		"admin-socket-path",
 		cfg.AdminSocketPath,
-		"unix socket path to start admin server on (disabled if empty)}")
+		"unix socket path to start admin server on (disabled if empty)")
 	rootCmd.PersistentFlags().StringVar(
 		&cfg.ReadThrough.SourceAddr,
 		"read-through-db-addr",
@@ -161,7 +163,7 @@ func parseArgs() *nildconfig.Config {
 	runCmd.Flags().BoolVar(&cfg.EnableDevApi, "dev-api", cfg.EnableDevApi, "enable development API")
 
 	addBasicFlags(runCmd.Flags(), cfg)
-	cmdflags.AddNetwork(runCmd.Flags(), cfg.Config.Network)
+	cmdflags.AddNetwork(runCmd.Flags(), cfg.Network)
 	cmdflags.AddTelemetry(runCmd.Flags(), cfg.Telemetry)
 
 	replayCmd := &cobra.Command{
@@ -184,7 +186,7 @@ func parseArgs() *nildconfig.Config {
 	}
 
 	addBasicFlags(archiveCmd.Flags(), cfg)
-	cmdflags.AddNetwork(archiveCmd.Flags(), cfg.Config.Network)
+	cmdflags.AddNetwork(archiveCmd.Flags(), cfg.Network)
 	cmdflags.AddTelemetry(archiveCmd.Flags(), cfg.Telemetry)
 
 	rpcCmd := &cobra.Command{
@@ -198,7 +200,7 @@ func parseArgs() *nildconfig.Config {
 
 	addRpcNodeFlags(rpcCmd.Flags(), cfg)
 	addAllowDbClearFlag(rpcCmd.Flags(), cfg)
-	cmdflags.AddNetwork(rpcCmd.Flags(), cfg.Config.Network)
+	cmdflags.AddNetwork(rpcCmd.Flags(), cfg.Network)
 	cmdflags.AddTelemetry(rpcCmd.Flags(), cfg.Telemetry)
 
 	versionCmd := cobrax.VersionCmd(appTitle)

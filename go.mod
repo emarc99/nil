@@ -48,6 +48,7 @@ require (
 	github.com/ClickHouse/clickhouse-go/v2 v2.33.1
 	github.com/NilFoundation/fastssz v0.1.5-0.20250218121538-03800b866858
 	github.com/dgraph-io/badger/v4 v4.6.0
+	github.com/dlsniper/debugger v0.6.0
 	github.com/ethereum/go-ethereum v1.14.13
 	github.com/go-viper/encoding/ini v0.1.1
 	github.com/go-viper/mapstructure/v2 v2.2.1

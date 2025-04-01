@@ -510,7 +510,7 @@ func (b blockAccessor) WithConfig() blockAccessor {
 }
 
 func (b blockAccessor) ByHash(hash common.Hash) (blockAccessorResult, error) {
-	sa := b.rawBlockAccessor.rawShardAccessor
+	sa := b.rawShardAccessor
 
 	raw, err := b.rawBlockAccessor.ByHash(hash)
 	if err != nil {
@@ -578,7 +578,7 @@ func (b blockAccessor) ByHash(hash common.Hash) (blockAccessorResult, error) {
 }
 
 func (b blockAccessor) ByNumber(num types.BlockNumber) (blockAccessorResult, error) {
-	sa := b.rawBlockAccessor.rawShardAccessor
+	sa := b.rawShardAccessor
 	hash, err := db.ReadBlockHashByNumber(sa.tx, sa.shardId, num)
 	if err != nil {
 		return blockAccessorResult{}, err

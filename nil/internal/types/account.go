@@ -10,7 +10,6 @@ import (
 
 type SmartContract struct {
 	Address          Address
-	Initialised      bool
 	Balance          Value `ssz-size:"32"`
 	TokenRoot        common.Hash
 	StorageRoot      common.Hash

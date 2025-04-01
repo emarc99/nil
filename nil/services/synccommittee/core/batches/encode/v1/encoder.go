@@ -21,6 +21,8 @@ type batchEncoder struct {
 	logger     logging.Logger
 }
 
+var _ encode.BatchEncoder = (*batchEncoder)(nil)
+
 func NewEncoder(logger logging.Logger) *batchEncoder {
 	return &batchEncoder{
 		compressor: NewZstdCompressor(logger),

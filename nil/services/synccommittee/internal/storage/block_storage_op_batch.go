@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"iter"
@@ -33,11 +32,8 @@ func (batchOp) putBatch(tx db.RwTx, entry *batchEntry) error {
 	return nil
 }
 
-func (t batchOp) getBatch(tx db.RoTx, id scTypes.BatchId) (*batchEntry, error) {
-	return t.getBatchBytesId(tx, id.Bytes(), true)
-}
-
-func (batchOp) getBatchBytesId(tx db.RoTx, idBytes []byte, required bool) (*batchEntry, error) {
+func (batchOp) getBatch(tx db.RoTx, id scTypes.BatchId) (*batchEntry, error) {
+	idBytes := id.Bytes()
 	value, err := tx.Get(batchesTable, idBytes)
 
 	switch {
@@ -47,14 +43,11 @@ func (batchOp) getBatchBytesId(tx db.RoTx, idBytes []byte, required bool) (*batc
 	case errors.Is(err, context.Canceled):
 		return nil, err
 
-	case errors.Is(err, db.ErrKeyNotFound) && required:
-		return nil, fmt.Errorf("%w, id=%s", scTypes.ErrBatchNotFound, hex.EncodeToString(idBytes))
-
 	case errors.Is(err, db.ErrKeyNotFound):
-		return nil, nil
+		return nil, fmt.Errorf("%w, id=%s", scTypes.ErrBatchNotFound, id)
 
 	default:
-		return nil, fmt.Errorf("failed to get batch with id=%s: %w", hex.EncodeToString(idBytes), err)
+		return nil, fmt.Errorf("failed to get batch with id=%s: %w", id, err)
 	}
 
 	entry, err := unmarshallEntry[batchEntry](idBytes, value)

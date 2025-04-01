@@ -438,8 +438,9 @@ func (p *proposer) handleTransactionsFromNeighbors(tx db.RoTx) error {
 				}
 
 				if txn.To.ShardId() == p.params.ShardId {
+					txnHash := txn.Hash()
 					// TODO: Temporary workaround to prevent transaction duplication
-					isProcessed, err := p.isTxProcessed(tx, txn.Hash())
+					isProcessed, err := p.isTxProcessed(tx, txnHash)
 					if err != nil {
 						return err
 					}
@@ -447,7 +448,6 @@ func (p *proposer) handleTransactionsFromNeighbors(tx db.RoTx) error {
 						continue
 					}
 
-					txnHash := txn.Hash()
 					if err := execution.ValidateInternalTransaction(txn); err != nil {
 						p.logger.Warn().Err(err).
 							Stringer(logging.FieldTransactionHash, txnHash).

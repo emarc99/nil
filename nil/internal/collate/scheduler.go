@@ -133,8 +133,8 @@ func (s *Scheduler) doCollate(ctx context.Context) error {
 
 		for {
 			select {
-			case newBlockId := <-syncCh:
-				if newBlockId < types.BlockNumber(height) {
+			case event := <-syncCh:
+				if event.evType != replayType || event.blockNumber < types.BlockNumber(height) {
 					continue
 				}
 
@@ -143,7 +143,8 @@ func (s *Scheduler) doCollate(ctx context.Context) error {
 				cancelFn()
 				err := <-consCh
 				s.logger.Debug().
-					Uint64(logging.FieldBlockNumber, height).
+					Uint64(logging.FieldHeight, height).
+					Uint64(logging.FieldBlockNumber, uint64(event.blockNumber)).
 					Err(err).
 					Msg("Consensus interrupted by syncer")
 				return nil
