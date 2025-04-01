@@ -23,6 +23,8 @@ const container: StyleObject = {
   ...expandProperty("padding", "0 16px 16px 16px"),
   ...getTabletStyles({
     ...expandProperty("padding", "0 48px 16px 48px"),
+    margin: "0 auto",
+    overflowX: "auto",
   }),
   ...getDesktopStyles({
     ...expandProperty("padding", "0 48px 16px 48px"),
@@ -110,5 +112,4 @@ export const mobileContainerStyle: StyleObject = {
 
 export const mobileContentStyle = {
   paddingTop: "16px",
-  overflowX: "auto",
 };
