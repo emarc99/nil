@@ -112,4 +112,5 @@ export const mobileContainerStyle: StyleObject = {
 
 export const mobileContentStyle = {
   paddingTop: "16px",
+  Overflow: "auto",
 };

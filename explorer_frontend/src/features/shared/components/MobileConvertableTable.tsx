@@ -64,13 +64,14 @@ export const MobileConvertableTable = ({ columns, data, isMobile }: MobileConver
     <div
       className={css({
         flexGrow: 1,
+        overflowX: "auto",
       })}
     >
       <div
         className={css({
           ...getTabletStyles({
             minWidth: "990px",
-            maxWidth: "1000px",
+            maxWidth: "100%",
             width: "100%",
           }),
         })}
@@ -80,19 +81,17 @@ export const MobileConvertableTable = ({ columns, data, isMobile }: MobileConver
           horizontalScrollWidth="100%"
           columns={columns}
           data={data}
+          emptyTransaction="No transactions"
           overrides={{
             Root: {
               style: () => ({
                 backgroundColor: COLORS.gray900,
-                maxWidth: "100%",
-                overflow: "visible",
               }),
             },
             Table: {
               style: () => ({
                 tableLayout: "fixed",
                 width: "100%",
-                overFlowx: "auto",
               }),
             },
           }}
